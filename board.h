@@ -13,7 +13,7 @@
 #define BOARD_NAME      "QuestPlatform_v1"
 
 // Default Settings
-#define APP_NAME        "Game_With_Buttons"
+#define APP_NAME        "Woodman"
 // Saund
 #define PlayDir         "0:\\"
 #define DEF_CallTrack   "Room.wav"

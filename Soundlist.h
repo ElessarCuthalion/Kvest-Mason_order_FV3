@@ -35,6 +35,10 @@ public:
     void DelayAndPlayRandomFileFromDir(systime_t Delay_MS, const char* DirName);
     FRESULT UpdateDir(const char* DirName) {
         int indx = DirIndxInList(DirName);
+        if(indx == -1)
+            indx = AddDirToList(DirName);
+        else
+            f_readdir(&Dir, &FileInfo);     // прочитать оставшийся элемент дириктории для сброса позиции на стартовую
         DirList[indx].LastN = -1;
         return CountFilesInDir(DirName, &DirList[indx].FilesCnt);
     }

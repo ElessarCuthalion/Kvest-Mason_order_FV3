@@ -23,8 +23,7 @@
 App_t App;
 SndList_t SndList;
 PinInput_t ExternalPWR(ExternalPWR_Pin);
-PinOutput_t PowerIND (LED_RED_out);
-TmrKL_t TmrLockBTN { EVT_LockBTN_TimeOut, tktOneShot };
+//TmrKL_t TmrLockBTN { EVT_LockBTN_TimeOut, tktOneShot };
 IntelLeds_t LedWs;
 //LEDs_t LEDs;
 
@@ -35,7 +34,7 @@ enum AppState_t {
 AppState_t State = asOff;
 
 void BtnHandler(BtnEvt_t BtnEvt, uint8_t BtnID);
-void LoadSettings(const char* FileName);
+//void LoadSettings(const char* FileName);
 
 char *CallFileName = nullptr;
 bool BTNisNotLocked = true;
@@ -86,8 +85,9 @@ int main() {
     Sound.Init();
     Sound.SetupSeqEndEvt(EVT_PLAY_ENDS);
     Sound.Ch1_ON();
+    Sound.SetVolume(DEF_VolLevel);
 
-    LoadSettings("Settings.ini");
+//    LoadSettings("Settings.ini");
     if (ExternalPWR.IsHi()) App.SignalEvt(EVT_USB_CONNECTED);
 
     // USB related
@@ -98,18 +98,14 @@ int main() {
     LedWs.ISetCurrentColors();
 
     // Timers
-    TmrLockBTN.Init();
-
-    // Indication
-    PowerIND.Init();
-    PowerIND.SetHi();
+//    TmrLockBTN.Init();
 
 #endif
     // ==== Main cycle ====
     App.ITask();
 }
 
-
+#if 0
 void LoadSettings(const char* SettingsFileName) {
     // Load Sound Settings
     uint8_t VolLevel = 0;
@@ -138,13 +134,18 @@ void LoadSettings(const char* SettingsFileName) {
         strcpy(CallFileName, DEF_CallTrack);
     }
 }
-
+#endif
 
 __attribute__ ((__noreturn__))
 void App_t::ITask() {
 while(true) {
     eventmask_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
 
+//    if(EvtMsk & EVT_PLAY_ENDS) {
+//        if (!ExternalPWR.IsHi()) {
+//
+//        }
+//    }
 //    if(EvtMsk & EVT_PLAY_ENDS) {
 //        if (!ExternalPWR.IsHi()) {
 //
@@ -165,7 +166,7 @@ while(true) {
 
  // ==== USB connected/disconnected ====
     if(EvtMsk & EVT_USB_CONNECTED) {
-//        Sound.Stop();
+        Sound.Stop();
         chSysLock();
         Clk.SetFreq48Mhz();
         chSysUnlock();
@@ -204,7 +205,7 @@ void BtnHandler(BtnEvt_t BtnEvt, uint8_t BtnID) {
     if(BtnEvt == beShortPress and BTNisNotLocked) {
         BTNisNotLocked = false;
         Sound.Play(CallFileName);
-        TmrLockBTN.StartOrRestart();
+//        TmrLockBTN.StartOrRestart();
         LedWs.ICurrentClr[BtnID] = {LEDs_Bright}; // R G B
         LedWs.ISetCurrentColors();
     }

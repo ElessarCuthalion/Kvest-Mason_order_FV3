@@ -38,7 +38,7 @@ void SndList_t::PlayRandomFileFromDir(const char* DirName) {
         FRESULT Rslt = CountFilesInDir(DirName, &DirList[indx].FilesCnt);
         if(Rslt != FR_OK) return;
     }
-    DirList[indx].Print();
+//    DirList[indx].Print();
     if(DirList[indx].FilesCnt == 0) return; // Get out if nothing to play
     // Select number of file
     int32_t Number = 0;
