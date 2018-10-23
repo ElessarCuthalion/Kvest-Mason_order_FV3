@@ -17,28 +17,24 @@
 #include "ws2812b.h"
 //#include "LEDs.h"
 #include "ws2812b.h"
+#include <Woodman.h>
 
 
 #if 1 // ======================== Variables and defines ========================
 App_t App;
 SndList_t SndList;
-PinInput_t ExternalPWR(ExternalPWR_Pin);
-//TmrKL_t TmrLockBTN { EVT_LockBTN_TimeOut, tktOneShot };
+PinInput_t ExternalPWR{ExternalPWR_Pin};
 IntelLeds_t LedWs;
 //LEDs_t LEDs;
 
+
 enum AppState_t {
-    asOff, asPlay, asStop,   // all
-    asBeep, asProcNumber, asWaiting, asSecondStop   // Phone
+    asStandby, asExpectation, asWoodmanActive, asHeartReturned, asDoorOpened,   // all
 };
-AppState_t State = asOff;
+AppState_t State = asStandby;
 
 void BtnHandler(BtnEvt_t BtnEvt, uint8_t BtnID);
 //void LoadSettings(const char* FileName);
-
-char *CallFileName = nullptr;
-bool BTNisNotLocked = true;
-uint8_t LEDs_Bright;
 
 #endif
 
@@ -98,7 +94,13 @@ int main() {
     LedWs.ISetCurrentColors();
 
     // Timers
-//    TmrLockBTN.Init();
+
+    // Game
+    State = asExpectation;
+    Woodman.Init();
+    Woodman.DefaultState();
+
+    Woodman.BacklightON();
 
 #endif
     // ==== Main cycle ====
@@ -141,22 +143,48 @@ void App_t::ITask() {
 while(true) {
     eventmask_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
 
-//    if(EvtMsk & EVT_PLAY_ENDS) {
-//        if (!ExternalPWR.IsHi()) {
-//
-//        }
-//    }
-//    if(EvtMsk & EVT_PLAY_ENDS) {
-//        if (!ExternalPWR.IsHi()) {
-//
-//        }
-//    }
+    if(EvtMsk & EVT_HandcarInTransit) {
+        switch(State) {
+            case asExpectation:
+                Woodman.BacklightON();
+        //        Woodman.HeartBlinkON();
+                State = asWoodmanActive;
+            break;
+            case asDoorOpened:
+                if (Woodman.IsNoHeart()) {
+                    Woodman.DefaultState();
+                    State = asExpectation;
+                }
+            break;
+            default: break;
+        }
+    }
+    if(EvtMsk & EVT_HeartReturn) {
+//        Woodman.HeartBlinkOFF();
+        Woodman.HeadUp();
+        Woodman.Pause_MS(1500);
+        State = asHeartReturned;
+    }
+    if(EvtMsk & EVT_WoodmanTimeOut) {
+        switch(State) {
+            case asHeartReturned:
+                Sound.Play(WoodmanMonologue_file);
+            break;
+            default: break;
+        }
+    }
 
-    if(EvtMsk & EVT_LockBTN_TimeOut) {
-        BTNisNotLocked = true;
-        for (uint8_t i=0; i<LED_CNT; i++)
-            LedWs.ICurrentClr[i] = {0};
-        LedWs.ISetCurrentColors();
+    if(EvtMsk & EVT_PLAY_ENDS) {
+//        if (!ExternalPWR.IsHi()) {
+        switch(State) {
+            case asHeartReturned:
+                Woodman.OpenDoor();
+                Woodman.SignalToHandcar();
+                State = asDoorOpened;
+            break;
+            default: break;
+        }
+//        }
     }
 
     if(EvtMsk & EVT_BUTTONS) {
@@ -202,13 +230,6 @@ void BtnHandler(BtnEvt_t BtnEvt, uint8_t BtnID) {
 //    if(BtnEvt == beClick)      Uart.Printf("Btn %u Click\r", BtnID);
 //    if(BtnEvt == beDoubleClick)Uart.Printf("Btn %u DoubleClick\r", BtnID);
 
-    if(BtnEvt == beShortPress and BTNisNotLocked) {
-        BTNisNotLocked = false;
-        Sound.Play(CallFileName);
-//        TmrLockBTN.StartOrRestart();
-        LedWs.ICurrentClr[BtnID] = {LEDs_Bright}; // R G B
-        LedWs.ISetCurrentColors();
-    }
 }
 
 
@@ -217,6 +238,12 @@ void Process5VSns(PinSnsState_t *PState, uint32_t Len) {
 //    Uart.Printf("  %S\r", __FUNCTION__);
     if(PState[0] == pssRising) App.SignalEvt(EVT_USB_CONNECTED);
     else if(PState[0] == pssFalling) App.SignalEvt(EVT_USB_DISCONNECTED);
+}
+void ProcessHandcarSns(PinSnsState_t *PState, uint32_t Len) {
+    if(PState[0] == pssFalling) App.SignalEvt(EVT_HandcarInTransit);
+}
+void ProcessHeartSns(PinSnsState_t *PState, uint32_t Len) {
+    if(PState[0] == pssFalling) App.SignalEvt(EVT_HeartReturn);
 }
 
 #if UART_RX_ENABLED // ================= Command processing ====================

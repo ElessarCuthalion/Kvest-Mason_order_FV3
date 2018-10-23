@@ -39,7 +39,7 @@
 #if 1 // ========================== GPIO =======================================
 
 // Button
-#define BUTTONS_CNT     6
+#define BUTTONS_CNT     0
 
 // Inputs
 #define Port1_in        GPIOC, 0, pudPullUp
