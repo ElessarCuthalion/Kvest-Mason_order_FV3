@@ -32,6 +32,22 @@
 #define DATA_W_CNT          ((DATA_BIT_CNT + 15) / 16)
 #define TOTAL_W_CNT         (DATA_W_CNT + RST_W_CNT)
 
+
+// ============================= Simple Colors =================================
+#define sclBlack     ((ColorWS_t){0,   0,   0})
+#define sclRed       ((ColorWS_t){255, 0,   0})
+#define sclGreen     ((ColorWS_t){0,   255, 0})
+#define sclBlue      ((ColorWS_t){0,   0,   255})
+#define sclYellow    ((ColorWS_t){255, 255, 0})
+#define sclMagenta   ((ColorWS_t){255, 0, 255})
+#define sclCyan      ((ColorWS_t){0, 255, 255})
+#define sclWhite     ((ColorWS_t){255, 255, 255})
+
+#define sclLightGrey ((ColorWS_t){180, 180, 180})
+#define sclGrey      ((ColorWS_t){126, 126, 126})
+#define sclDarkGrey  ((ColorWS_t){54, 54, 54})
+
+
 typedef struct {
     uint8_t R, G, B;
 } ColorWS_t;

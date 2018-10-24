@@ -14,15 +14,10 @@
 
 // Default Settings
 #define APP_NAME        "Woodman"
-// Saund
+// Sound
 #define PlayDir         "0:\\"
-#define DEF_CallTrack   "Room.wav"
-#define DEF_VolLevel    240
-// Times
-#define DEF_Lock_delay_MS   5000
 // RGB LEDs
-#define DEF_LEDs_Bright     255
-#define LED_CNT         6  // Number of WS2812 LEDs
+#define LED_CNT         30  // Number of WS2812 LEDs
 
 
 // MCU type as defined in the ST header.

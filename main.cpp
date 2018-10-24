@@ -14,9 +14,6 @@
 #include "Sequences.h"
 #include "sound.h"
 #include "Soundlist.h"
-#include "ws2812b.h"
-//#include "LEDs.h"
-#include "ws2812b.h"
 #include "Woodman.h"
 
 
@@ -24,8 +21,6 @@
 App_t App;
 SndList_t SndList;
 PinInput_t ExternalPWR{ExternalPWR_Pin};
-IntelLeds_t LedWs;
-//LEDs_t LEDs;
 
 
 enum AppState_t {
@@ -81,7 +76,7 @@ int main() {
     Sound.Init();
     Sound.SetupSeqEndEvt(EVT_PLAY_ENDS);
     Sound.Ch1_ON();
-    Sound.SetVolume(DEF_VolLevel);
+    Sound.SetVolume(WoodmanMonologue_VolLevel);
 
 //    LoadSettings("Settings.ini");
     if (ExternalPWR.IsHi()) App.SignalEvt(EVT_USB_CONNECTED);
@@ -90,8 +85,8 @@ int main() {
     MassStorage.Init();
 
     // LEDs
-    LedWs.Init();
-    LedWs.ISetCurrentColors();
+//    LedWs.Init();
+//    LedWs.ISetCurrentColors();
 
     // Timers
 
@@ -159,7 +154,7 @@ while(true) {
     }
     if(EvtMsk & EVT_HeartReturn) {
         Uart.Printf("EVT_HeartReturn\r");
-//        Woodman.HeartBlinkOFF();
+        Woodman.HeartBlinkOFF();
         Woodman.HeadUp();
         Woodman.Pause_MS(3000);
         State = asHeartReturned;

@@ -23,10 +23,25 @@ __attribute__((noreturn))
 void Woodman_t::ITask() {
     while(true) {
         eventmask_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
+
         switch(EvtMsk) {
             case WM_EVT_PauseTimeOut:
                 chEvtSignal(IPAppThd, EVT_WoodmanTimeOut);
-            break;
+                break;
+
+            case WM_EVT_HeartBlinkTimeOut:
+                static bool HeartGlows = false;
+                for (uint8_t i=HeartBeginIndex; i<HeartEndIndex; i++)
+                    if (!HeartGlows) LedWs.ICurrentClr[i] = HeartColor;
+                    else LedWs.ICurrentClr[i] = sclBlack;
+                LedWs.ISetCurrentColors();
+                HeartGlows = ~HeartGlows;
+                break;
+
+            case WM_EVT_WS_processTimeOut:
+
+                break;
+
             default: break;
         }
     } // while true
@@ -45,10 +60,17 @@ void Woodman_t::Init() {
     HandcarSignal.Init();
 //    PinSetupOut(VS_GPIO, VS_RST, omPushPull);
 //    PinSetupAlterFunc(VS_GPIO, VS_SI,   omPushPull, pudNone, VS_AF);
+
+    // LEDs
+    LedWs.Init();
+    LedWs.ISetCurrentColors();
+
     IPAppThd = chThdGetSelfX();
     // ==== DREQ IRQ ====
 //    IDreq.Init(ttRising);
     // ==== Thread ====
     PThread = chThdCreateStatic(waWoodmanThread, sizeof(waWoodmanThread), NORMALPRIO, (tfunc_t)WoodmanThread, NULL);
-    WM_TmrWait.Init(PThread);
+    TmrWait.Init(PThread);
+    HeartBlinkTmr.Init(PThread);
+    WS_process_Tmr.Init(PThread);
 }
