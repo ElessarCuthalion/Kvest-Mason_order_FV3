@@ -5,7 +5,6 @@
  *      Author: Elessar
  */
 
-
 #include "Woodman.h"
 #include "kl_lib.h"
 
@@ -46,10 +45,10 @@ void Woodman_t::Init() {
     HandcarSignal.Init();
 //    PinSetupOut(VS_GPIO, VS_RST, omPushPull);
 //    PinSetupAlterFunc(VS_GPIO, VS_SI,   omPushPull, pudNone, VS_AF);
-    WM_TmrWait.Init();
     IPAppThd = chThdGetSelfX();
     // ==== DREQ IRQ ====
 //    IDreq.Init(ttRising);
     // ==== Thread ====
     PThread = chThdCreateStatic(waWoodmanThread, sizeof(waWoodmanThread), NORMALPRIO, (tfunc_t)WoodmanThread, NULL);
+    WM_TmrWait.Init(PThread);
 }

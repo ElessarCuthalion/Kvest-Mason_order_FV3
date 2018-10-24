@@ -17,7 +17,7 @@
 #include "ws2812b.h"
 //#include "LEDs.h"
 #include "ws2812b.h"
-#include <Woodman.h>
+#include "Woodman.h"
 
 
 #if 1 // ======================== Variables and defines ========================
@@ -100,8 +100,6 @@ int main() {
     Woodman.Init();
     Woodman.DefaultState();
 
-    Woodman.BacklightON();
-
 #endif
     // ==== Main cycle ====
     App.ITask();
@@ -144,6 +142,7 @@ while(true) {
     eventmask_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
 
     if(EvtMsk & EVT_HandcarInTransit) {
+        Uart.Printf("EVT_HandcarInTransit\r");
         switch(State) {
             case asExpectation:
                 Woodman.BacklightON();
@@ -151,21 +150,22 @@ while(true) {
                 State = asWoodmanActive;
             break;
             case asDoorOpened:
-                if (Woodman.IsNoHeart()) {
-                    Woodman.DefaultState();
-                    State = asExpectation;
-                }
+                chThdSleepMilliseconds(10000);
+                Woodman.DefaultState();
+                State = asExpectation;
             break;
             default: break;
         }
     }
     if(EvtMsk & EVT_HeartReturn) {
+        Uart.Printf("EVT_HeartReturn\r");
 //        Woodman.HeartBlinkOFF();
         Woodman.HeadUp();
-        Woodman.Pause_MS(1500);
+        Woodman.Pause_MS(3000);
         State = asHeartReturned;
     }
     if(EvtMsk & EVT_WoodmanTimeOut) {
+        Uart.Printf("EVT_WoodmanTimeOut\r");
         switch(State) {
             case asHeartReturned:
                 Sound.Play(WoodmanMonologue_file);

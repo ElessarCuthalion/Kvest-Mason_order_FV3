@@ -39,7 +39,7 @@ public:
     void SignalToHandcar() {
         HandcarSignal.SetHi();
         chThdSleepMilliseconds(5000);
-        HandcarSignal.SetHi();
+        HandcarSignal.SetLo();
     }
 
     void Pause_MS(systime_t ATime_MS) {
@@ -54,6 +54,8 @@ public:
         Backlight.SetLo();  // отключить подсветку
         Head.SetHi();       // замагнитить голову
         DoorK2K3.SetHi();   // замагнитить дверь на выход
+//        HeartBlinkOFF();    // погосить подсветку сердца, рта и глаз
+        HandcarSignal.SetLo();  // погасить сигнал на дрезину (про запас)
     }
 
     // Inner use
