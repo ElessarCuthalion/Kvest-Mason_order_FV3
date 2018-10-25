@@ -21,15 +21,23 @@
 #define HeartBeginIndex         0
 #define HeartEndIndex           15
 #define HeartColor              sclRed
+// Times
+#define HeadUp_TimeOut_MS       2000
 
 // Event mask
 #define WM_EVT_PauseTimeOut         EVENT_MASK(1)
 #define WM_EVT_HeartBlinkTimeOut    EVENT_MASK(2)
 #define WM_EVT_WS_processTimeOut    EVENT_MASK(3)
+#define EVT_HandcarInTransit        EVENT_MASK(4)
+#define EVT_HeartReturn             EVENT_MASK(5)
+#define EVT_WoodmanTimeOut          EVENT_MASK(6)
 
 
 enum TmrWoodmanState {wsPause, wsHandcarSignal};
 
+typedef enum {
+    asExpectation, asWoodmanActive, asHeartReturned, asDoorOpened,
+} WoodmanState_t;
 
 class Woodman_t {
 private:
@@ -44,12 +52,21 @@ private:
     TmrKL_t WS_process_Tmr { WM_EVT_WS_processTimeOut, tktOneShot };
     thread_t *IPAppThd;
 
+    WoodmanState_t State = asExpectation;
+
 public:
+    void SignalEvt(uint32_t EvtMsk) {
+        chSysLock();
+        chEvtSignalI(PThread, EvtMsk);
+        chSysUnlock();
+    }
+
     void BacklightON() { Backlight.SetHi(); }
     void HeadUp() { Head.SetLo(); }
     void HeartBlinkON() { HeartBlinkTmr.StartOrRestart(); }
     void HeartBlinkOFF() { HeartBlinkTmr.Stop(); }
-    void OpenDoor() { DoorK2K3.SetLo(); }
+    void OpenDoor() { DoorK2K3.SetLo(); State = asDoorOpened; }
+    void StartGesture() {}
     void SignalToHandcar() {
         HandcarSignal.SetHi();
         chThdSleepMilliseconds(5000);
@@ -59,8 +76,7 @@ public:
     void Pause_MS(systime_t ATime_MS) {
         TmrWait.StartOrRestart(MS2ST(ATime_MS));
     }
-
-    bool IsNoHeart() { return !Heart_pin.IsHi(); }
+    WoodmanState_t GetState() { return State; }
 
 //    void RegisterAppThd(thread_t *PThd) { IPAppThd = PThd; }
 

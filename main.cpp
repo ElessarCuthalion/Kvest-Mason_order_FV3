@@ -24,7 +24,7 @@ PinInput_t ExternalPWR{ExternalPWR_Pin};
 
 
 enum AppState_t {
-    asStandby, asExpectation, asWoodmanActive, asHeartReturned, asDoorOpened,   // all
+    asStandby, asGame,
 };
 AppState_t State = asStandby;
 
@@ -91,7 +91,7 @@ int main() {
     // Timers
 
     // Game
-    State = asExpectation;
+    State = asStandby;
     Woodman.Init();
     Woodman.DefaultState();
 
@@ -136,46 +136,17 @@ void App_t::ITask() {
 while(true) {
     eventmask_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
 
-    if(EvtMsk & EVT_HandcarInTransit) {
-        Uart.Printf("EVT_HandcarInTransit\r");
-        switch(State) {
-            case asExpectation:
-                Woodman.BacklightON();
-        //        Woodman.HeartBlinkON();
-                State = asWoodmanActive;
-            break;
-            case asDoorOpened:
-                chThdSleepMilliseconds(10000);
-                Woodman.DefaultState();
-                State = asExpectation;
-            break;
-            default: break;
-        }
-    }
-    if(EvtMsk & EVT_HeartReturn) {
-        Uart.Printf("EVT_HeartReturn\r");
-        Woodman.HeartBlinkOFF();
-        Woodman.HeadUp();
-        Woodman.Pause_MS(3000);
-        State = asHeartReturned;
-    }
-    if(EvtMsk & EVT_WoodmanTimeOut) {
-        Uart.Printf("EVT_WoodmanTimeOut\r");
-        switch(State) {
-            case asHeartReturned:
-                Sound.Play(WoodmanMonologue_file);
-            break;
-            default: break;
-        }
+    if(EvtMsk & EVT_WoodmanCameToLife) {
+        Sound.Play(WoodmanMonologue_file);
+        Woodman.StartGesture();
     }
 
     if(EvtMsk & EVT_PLAY_ENDS) {
 //        if (!ExternalPWR.IsHi()) {
-        switch(State) {
+        switch(Woodman.GetState()) {
             case asHeartReturned:
                 Woodman.OpenDoor();
                 Woodman.SignalToHandcar();
-                State = asDoorOpened;
             break;
             default: break;
         }
@@ -234,11 +205,12 @@ void Process5VSns(PinSnsState_t *PState, uint32_t Len) {
     if(PState[0] == pssRising) App.SignalEvt(EVT_USB_CONNECTED);
     else if(PState[0] == pssFalling) App.SignalEvt(EVT_USB_DISCONNECTED);
 }
+// for Woodman
 void ProcessHandcarSns(PinSnsState_t *PState, uint32_t Len) {
-    if(PState[0] == pssFalling) App.SignalEvt(EVT_HandcarInTransit);
+    if(PState[0] == pssFalling) Woodman.SignalEvt(EVT_HandcarInTransit);
 }
 void ProcessHeartSns(PinSnsState_t *PState, uint32_t Len) {
-    if(PState[0] == pssFalling) App.SignalEvt(EVT_HeartReturn);
+    if(PState[0] == pssFalling) Woodman.SignalEvt(EVT_HeartReturn);
 }
 
 #if UART_RX_ENABLED // ================= Command processing ====================

@@ -17,10 +17,8 @@
 #define EVT_BUTTONS             EVENT_MASK(6)
 #define EVT_ADC_DONE            EVENT_MASK(7)
 
-#define EVT_HandcarInTransit    EVENT_MASK(10)
-#define EVT_HeartReturn         EVENT_MASK(11)
-#define EVT_WoodmanTimeOut      EVENT_MASK(12)
+#define EVT_WoodmanCameToLife   EVENT_MASK(10)
 
-#define EVT_LED_DONE            EVENT_MASK(16)
+//#define EVT_LED_DONE            EVENT_MASK(16)
 
 #endif /* EVT_MASK_H_ */

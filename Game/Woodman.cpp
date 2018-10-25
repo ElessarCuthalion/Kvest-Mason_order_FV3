@@ -24,10 +24,42 @@ void Woodman_t::ITask() {
     while(true) {
         eventmask_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
 
-        switch(EvtMsk) {
-            case WM_EVT_PauseTimeOut:
-                chEvtSignal(IPAppThd, EVT_WoodmanTimeOut);
+        if(EvtMsk & EVT_HandcarInTransit) {
+            Uart.Printf("EVT_HandcarInTransit\r");
+            switch(State) {
+                case asExpectation:
+                    Woodman.BacklightON();
+            //        Woodman.HeartBlinkON();
+                    State = asWoodmanActive;
                 break;
+                case asDoorOpened:
+                    chThdSleepMilliseconds(10000);
+                    Woodman.DefaultState();
+                    State = asExpectation;
+                break;
+                default: break;
+            }
+        }
+
+        if(EvtMsk & EVT_HeartReturn) {
+            Uart.Printf("EVT_HeartReturn\r");
+            State = asHeartReturned;
+            Woodman.HeartBlinkOFF();
+            Woodman.HeadUp();
+            TmrWait.StartOrRestart(MS2ST(HeadUp_TimeOut_MS));
+        }
+        if(EvtMsk & WM_EVT_PauseTimeOut) {
+            Uart.Printf("EVT_WoodmanTimeOut\r");
+            switch(State) {
+                case asHeartReturned:
+                    chEvtSignal(IPAppThd, EVT_WoodmanCameToLife);
+                break;
+                default: break;
+            }
+        }
+
+
+        switch(EvtMsk) {
 
             case WM_EVT_HeartBlinkTimeOut:
                 static bool HeartGlows = false;
