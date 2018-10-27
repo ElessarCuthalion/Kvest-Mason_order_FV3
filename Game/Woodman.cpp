@@ -22,6 +22,7 @@ static void WoodmanThread(void *arg) {
 __attribute__((noreturn))
 void Woodman_t::ITask() {
     while(true) {
+
         eventmask_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
 
         if(EvtMsk & EVT_HandcarInTransit) {
@@ -29,7 +30,7 @@ void Woodman_t::ITask() {
             switch(State) {
                 case asExpectation:
                     Woodman.BacklightON();
-            //        Woodman.HeartBlinkON();
+                    Woodman.HeartBlinkON();
                     State = asWoodmanActive;
                 break;
                 case asDoorOpened:
@@ -64,10 +65,11 @@ void Woodman_t::ITask() {
             case WM_EVT_HeartBlinkTimeOut:
                 static bool HeartGlows = false;
                 for (uint8_t i=HeartBeginIndex; i<HeartEndIndex; i++)
-                    if (!HeartGlows) LedWs.ICurrentClr[i] = HeartColor;
+                    if (!HeartGlows) LedWs.ICurrentClr[i] = Brightness(HeartColor, HeartBrightness);
                     else LedWs.ICurrentClr[i] = sclBlack;
                 LedWs.ISetCurrentColors();
-                HeartGlows = ~HeartGlows;
+                if (HeartGlows) HeartGlows = false;
+                else HeartGlows = true;
                 break;
 
             case WM_EVT_WS_processTimeOut:

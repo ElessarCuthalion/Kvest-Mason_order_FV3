@@ -21,6 +21,7 @@
 #define HeartBeginIndex         0
 #define HeartEndIndex           15
 #define HeartColor              sclRed
+#define HeartBrightness         70
 // Times
 #define HeadUp_TimeOut_MS       2000
 
@@ -38,6 +39,14 @@ enum TmrWoodmanState {wsPause, wsHandcarSignal};
 typedef enum {
     asExpectation, asWoodmanActive, asHeartReturned, asDoorOpened,
 } WoodmanState_t;
+
+static ColorWS_t Brightness(ColorWS_t AColor, uint8_t APercent) {
+    ColorWS_t Result = {0};
+    Result.R = (uint16_t)(AColor.R*APercent)/100;
+    Result.G = (uint16_t)(AColor.G*APercent)/100;
+    Result.B = (uint16_t)(AColor.B*APercent)/100;
+    return Result;
+}
 
 class Woodman_t {
 private:
@@ -64,7 +73,12 @@ public:
     void BacklightON() { Backlight.SetHi(); }
     void HeadUp() { Head.SetLo(); }
     void HeartBlinkON() { HeartBlinkTmr.StartOrRestart(); }
-    void HeartBlinkOFF() { HeartBlinkTmr.Stop(); }
+    void HeartBlinkOFF() {
+        HeartBlinkTmr.Stop();
+        for (uint8_t i=HeartBeginIndex; i<HeartEndIndex; i++)
+            LedWs.ICurrentClr[i] = HeartColor;
+        LedWs.ISetCurrentColors();
+    }
     void OpenDoor() { DoorK2K3.SetLo(); State = asDoorOpened; }
     void StartGesture() {}
     void SignalToHandcar() {
