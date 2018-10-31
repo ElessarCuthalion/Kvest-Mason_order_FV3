@@ -25,17 +25,19 @@
 extern void ProcessButtons(PinSnsState_t *PState, uint32_t Len);
 extern void Process5VSns(PinSnsState_t *PState, uint32_t Len);
 
-extern void ProcessHandcarSns(PinSnsState_t *PState, uint32_t Len);
+extern void ProcessHandcarCenterSns(PinSnsState_t *PState, uint32_t Len);
+extern void ProcessHandcarStartSns(PinSnsState_t *PState, uint32_t Len);
 extern void ProcessHeartSns(PinSnsState_t *PState, uint32_t Len);
 
 const PinSns_t PinSns[] = {
         // Button
-//        {Port1_in, ProcessButtons},
+        {LED_CH2_in, ProcessButtons},
         // 5V sns
         {ExternalPWR_Pin, Process5VSns},
         // Other sns
-        {Port1_in, ProcessHandcarSns},
+        {Port1_in, ProcessHandcarCenterSns},
         {Port2_in, ProcessHeartSns},
+        {LED_CH1_in, ProcessHandcarStartSns},
 };
 #define PIN_SNS_CNT     countof(PinSns)
 

@@ -25,7 +25,7 @@ void Woodman_t::ITask() {
 
         eventmask_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
 
-        if(EvtMsk & EVT_HandcarInTransit) {
+        if(EvtMsk & WM_EVT_HandcarInTransit) {
             Uart.Printf("EVT_HandcarInTransit\r");
             switch(State) {
                 case asExpectation:
@@ -33,16 +33,17 @@ void Woodman_t::ITask() {
                     Woodman.HeartBlinkON();
                     State = asWoodmanActive;
                 break;
-                case asDoorOpened:
-                    chThdSleepMilliseconds(10000);
-                    Woodman.DefaultState();
-                    State = asExpectation;
-                break;
                 default: break;
             }
         }
+        if(EvtMsk & WM_EVT_HandcarParked) {
+            if (State == asDoorOpened) {
+                Woodman.DefaultState();
+                State = asExpectation;
+            }
+        }
 
-        if(EvtMsk & EVT_HeartReturn) {
+        if(EvtMsk & WM_EVT_HeartReturn) {
             Uart.Printf("EVT_HeartReturn\r");
             State = asHeartReturned;
             Woodman.HeartBlinkOFF();
@@ -59,25 +60,38 @@ void Woodman_t::ITask() {
             }
         }
 
-
-        switch(EvtMsk) {
-
-            case WM_EVT_HeartBlinkTimeOut:
-                static bool HeartGlows = false;
-                for (uint8_t i=HeartBeginIndex; i<HeartEndIndex; i++)
-                    if (!HeartGlows) LedWs.ICurrentClr[i] = Brightness(HeartColor, HeartBrightness);
-                    else LedWs.ICurrentClr[i] = sclBlack;
-                LedWs.ISetCurrentColors();
-                if (HeartGlows) HeartGlows = false;
-                else HeartGlows = true;
-                break;
-
-            case WM_EVT_WS_processTimeOut:
-
-                break;
-
-            default: break;
+        if(EvtMsk & WM_EVT_HeartBlinkTimeOut) {
+            static bool HeartLit = false;
+            for (uint8_t i=HeartBeginIndex; i<HeartEndIndex; i++)
+                if (!HeartLit) LedWs.ICurrentClr[i] = Brightness(HeartColor, HeartBrightness);
+                else LedWs.ICurrentClr[i] = sclBlack;
+            LedWs.ISetCurrentColors();
+            HeartLit = !HeartLit;
         }
+        #define SmileCenterIndex    SmileBeginIndex + SmileWidth_LEDs
+        if(EvtMsk & WM_EVT_GestureProcessing) {
+            static uint8_t poss = 0;
+            static systime_t PastTime = 0;
+            for (uint8_t i = SmileCenterIndex; i < SmileWidth_LEDs; i++) {
+                if (i <= SmileCenterIndex+GestureMonologue[poss].Level) {
+                    LedWs.ICurrentClr[SmileBrightness+i] = Brightness(SmileColor, SmileBrightness);
+                    LedWs.ICurrentClr[SmileBrightness-i-1] = Brightness(SmileColor, SmileBrightness);
+                } else {
+                    LedWs.ICurrentClr[SmileBrightness+i] = sclBlack;
+                    LedWs.ICurrentClr[SmileBrightness-i-1] = sclBlack;
+                };
+            }
+            GestureProcess_Tmr.StartOrRestart(MS2ST(GestureMonologue[poss].Position_MS - PastTime));
+            LedWs.ISetCurrentColors();
+            if (poss < GestureLimit) {
+                poss ++;
+                PastTime += GestureMonologue[poss].Position_MS;
+            } else {
+                poss = 0;
+                PastTime = 0;
+            }
+        }
+
     } // while true
 }
 
@@ -94,6 +108,10 @@ void Woodman_t::Init() {
     HandcarSignal.Init();
 //    PinSetupOut(VS_GPIO, VS_RST, omPushPull);
 //    PinSetupAlterFunc(VS_GPIO, VS_SI,   omPushPull, pudNone, VS_AF);
+    TunnelLighting.Init();
+    TunnelLighting.SetBrightness(0);
+//    TunnelLighting.SetPwmFrequencyHz(1000);
+    TunnelLighting.StartOrContinue(lsqFadeIn);
 
     // LEDs
     LedWs.Init();
@@ -106,5 +124,5 @@ void Woodman_t::Init() {
     PThread = chThdCreateStatic(waWoodmanThread, sizeof(waWoodmanThread), NORMALPRIO, (tfunc_t)WoodmanThread, NULL);
     TmrWait.Init(PThread);
     HeartBlinkTmr.Init(PThread);
-    WS_process_Tmr.Init(PThread);
+    GestureProcess_Tmr.Init(PThread);
 }

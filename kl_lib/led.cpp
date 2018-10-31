@@ -13,8 +13,10 @@ void LedSmoothTmrCallback(void *p) {
     chSysUnlockFromISR();
 }
 
+#ifdef RGBTmrCallback
 void LedRGBTmrCallback(void *p) {
     chSysLockFromISR();
     ((LedRGB_t*)p)->IProcessSequenceI();
     chSysUnlockFromISR();
 }
+#endif

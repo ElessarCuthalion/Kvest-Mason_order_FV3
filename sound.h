@@ -25,10 +25,12 @@
 #define VS_SI           15
 // Amplifier
 #define VS_AMPF_EXISTS  TRUE
-#define VS_AMPF_GPIO    GPIOC
-#define VS_AMPF_Ch1_PIN     13
-#define VS_AMPF_Ch2_PIN     14
-#define VS_AMPF_Ch3_PIN     15
+#define VS_AMPF_Ch1_PIN GPIOC, 13, omPushPull
+#define VS_AMPF_Ch2_PIN GPIOC, 14, omPushPull
+#define VS_AMPF_Ch3_PIN GPIOC, 15, omPushPull
+typedef enum {
+    SndCh1, SndCh2, SndCh3,
+} SndChannels_t;
 
 // SPI
 #define VS_SPI          SPI2
@@ -150,6 +152,13 @@ private:
     void PrepareToStop();
     void SendZeroes();
     void IPlayNew();
+#if VS_AMPF_EXISTS
+    PinOutput_t Channel[] = {          // привязка каналов к физичесским выводам
+            Channel[SndCh1] = {VS_AMPF_Ch1_PIN},
+            Channel[SndCh2] = {VS_AMPF_Ch2_PIN},
+            Channel[SndCh3] = {VS_AMPF_Ch3_PIN},
+    };
+#endif
 public:
     sndState_t State;
     void Init();
@@ -201,12 +210,8 @@ public:
 
     uint32_t GetPosition() { return IFile.fptr; }
 #if VS_AMPF_EXISTS
-    void Ch1_ON()  { PinSetHi(VS_AMPF_GPIO, VS_AMPF_Ch1_PIN); }
-    void Ch1_OFF() { PinSetLo(VS_AMPF_GPIO, VS_AMPF_Ch1_PIN); }
-    void Ch2_ON()  { PinSetHi(VS_AMPF_GPIO, VS_AMPF_Ch2_PIN); }
-    void Ch2_OFF() { PinSetLo(VS_AMPF_GPIO, VS_AMPF_Ch2_PIN); }
-    void Ch3_ON()  { PinSetHi(VS_AMPF_GPIO, VS_AMPF_Ch3_PIN); }
-    void Ch3_OFF() { PinSetLo(VS_AMPF_GPIO, VS_AMPF_Ch3_PIN); }
+    void ONChannel(SndChannels_t AChannel) { Channel[AChannel].SetHi(); }
+    void OFFChannel(SndChannels_t AChannel) { Channel[AChannel].SetLo(); }
 #endif
     // Inner use
     thread_t *PThread;

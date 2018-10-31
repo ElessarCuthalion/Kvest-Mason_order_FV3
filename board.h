@@ -34,7 +34,7 @@
 #if 1 // ========================== GPIO =======================================
 
 // Button
-#define BUTTONS_CNT     0
+#define BUTTONS_CNT     1
 
 // Inputs
 #define Port1_in        GPIOC, 0, pudPullUp
@@ -48,6 +48,11 @@
 #define PwPort4_in      GPIOC, 7, pudPullUp
 #define PwPort5_in      GPIOB, 0, pudPullUp
 
+#define LED_CH1_in      GPIOB, 6, pudPullUp
+#define LED_CH2_in      GPIOB, 7, pudPullUp
+#define LED_CH3_in      GPIOB, 8, pudPullUp
+#define LED_CH4_in      GPIOB, 9, pudPullUp
+
 // Outputs
 #define Port1_out       GPIOC, 0, omPushPull
 #define Port2_out       GPIOC, 1, omPushPull
@@ -60,10 +65,14 @@
 #define PwPort4_out     GPIOC, 7, omPushPull
 #define PwPort5_out     GPIOB, 0, omPushPull
 
-#define LED_RED_out     GPIOB, 6, omPushPull
-#define LED_GREEN_out   GPIOB, 7, omPushPull
-#define LED_BLUE_out    GPIOB, 8, omPushPull
+#define LED_CH1_out     GPIOB, 6, omPushPull
+#define LED_CH2_out     GPIOB, 7, omPushPull
+#define LED_CH3_out     GPIOB, 8, omPushPull
 #define LED_CH4_out     GPIOB, 9, omPushPull
+#define LED_PWM1        { GPIOB, 6, TIM4, 1, invNotInverted, omPushPull, 512 }
+#define LED_PWM2        { GPIOB, 7, TIM4, 2, invNotInverted, omPushPull, 512 }
+#define LED_PWM3        { GPIOB, 8, TIM4, 3, invNotInverted, omPushPull, 512 }
+#define LED_PWM4        { GPIOB, 9, TIM4, 4, invNotInverted, omPushPull, 512 }
 
 // Beeper
 

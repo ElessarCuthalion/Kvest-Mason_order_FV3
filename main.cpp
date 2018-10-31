@@ -10,8 +10,8 @@
 #include "SimpleSensors.h"
 #include "buttons.h"
 #include "kl_adc.h"
-#include "led.h"
-#include "Sequences.h"
+//#include "led.h"
+//#include "Sequences.h"
 #include "sound.h"
 #include "Soundlist.h"
 #include "Woodman.h"
@@ -28,7 +28,8 @@ enum AppState_t {
 };
 AppState_t State = asStandby;
 
-void BtnHandler(BtnEvt_t BtnEvt, uint8_t BtnID);
+//void BtnHandler(BtnEvt_t BtnEvt, uint8_t BtnID);
+void BtnHandler(BtnEvt_t BtnEvt);
 //void LoadSettings(const char* FileName);
 
 #endif
@@ -75,8 +76,8 @@ int main() {
     // Sound
     Sound.Init();
     Sound.SetupSeqEndEvt(EVT_PLAY_ENDS);
-    Sound.Ch1_ON();
-    Sound.SetVolume(WoodmanMonologue_VolLevel);
+//    Sound.Ch1_ON();
+//    Sound.SetVolume(WoodmanMonologue_VolLevel);
 
 //    LoadSettings("Settings.ini");
     if (ExternalPWR.IsHi()) App.SignalEvt(EVT_USB_CONNECTED);
@@ -137,6 +138,8 @@ while(true) {
     eventmask_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
 
     if(EvtMsk & EVT_WoodmanCameToLife) {
+        Sound.ONChannel(WoodmanMonologue_Channel);
+        Sound.SetVolume(WoodmanMonologue_VolLevel);
         Sound.Play(WoodmanMonologue_file);
         Woodman.StartGesture();
     }
@@ -145,6 +148,7 @@ while(true) {
 //        if (!ExternalPWR.IsHi()) {
         switch(Woodman.GetState()) {
             case asHeartReturned:
+                Sound.OFFChannel(WoodmanMonologue_Channel);
                 Woodman.OpenDoor();
                 Woodman.SignalToHandcar();
             break;
@@ -155,7 +159,8 @@ while(true) {
 
     if(EvtMsk & EVT_BUTTONS) {
         BtnEvtInfo_t EInfo;
-        while(BtnGetEvt(&EInfo) == retvOk) BtnHandler(EInfo.Type, EInfo.BtnID);
+        while(BtnGetEvt(&EInfo) == retvOk) BtnHandler(EInfo.Type);
+//        while(BtnGetEvt(&EInfo) == retvOk) BtnHandler(EInfo.Type, EInfo.BtnID);
     }
 
  // ==== USB connected/disconnected ====
@@ -188,14 +193,27 @@ while(true) {
     } // while true
 } // App_t::ITask()
 
-void BtnHandler(BtnEvt_t BtnEvt, uint8_t BtnID) {
-    if(BtnEvt == beShortPress) Uart.Printf("Btn %u Short\r", BtnID);
+//void BtnHandler(BtnEvt_t BtnEvt, uint8_t BtnID) {
+void BtnHandler(BtnEvt_t BtnEvt) {
+//    if(BtnEvt == beShortPress) Uart.Printf("Btn %u Short\r", BtnID);
 //    if(BtnEvt == beLongPress)  Uart.Printf("Btn %u Long\r", BtnID);
 //    if(BtnEvt == beRelease)    Uart.Printf("Btn %u Release\r", BtnID);
 //    if(BtnEvt == beRepeat)    Uart.Printf("Btn %u Repeat\r", BtnID);
 //    if(BtnEvt == beClick)      Uart.Printf("Btn %u Click\r", BtnID);
 //    if(BtnEvt == beDoubleClick)Uart.Printf("Btn %u DoubleClick\r", BtnID);
 
+    if (BtnEvt == beShortPress) {
+        if (!Woodman.BacklightIsOn() )
+            Woodman.BacklightON();
+        else {
+            Woodman.DefaultState();
+        }
+//        switch(Woodman.GetState()) {
+//            case beShortPress:
+//                break;
+//            default: break;
+//        }
+    }
 }
 
 
@@ -206,11 +224,14 @@ void Process5VSns(PinSnsState_t *PState, uint32_t Len) {
     else if(PState[0] == pssFalling) App.SignalEvt(EVT_USB_DISCONNECTED);
 }
 // for Woodman
-void ProcessHandcarSns(PinSnsState_t *PState, uint32_t Len) {
-    if(PState[0] == pssFalling) Woodman.SignalEvt(EVT_HandcarInTransit);
+void ProcessHandcarStartSns(PinSnsState_t *PState, uint32_t Len) {
+    if(PState[0] == pssFalling) Woodman.SignalEvt(WM_EVT_HandcarParked);
+}
+void ProcessHandcarCenterSns(PinSnsState_t *PState, uint32_t Len) {
+    if(PState[0] == pssFalling) Woodman.SignalEvt(WM_EVT_HandcarInTransit);
 }
 void ProcessHeartSns(PinSnsState_t *PState, uint32_t Len) {
-    if(PState[0] == pssFalling) Woodman.SignalEvt(EVT_HeartReturn);
+    if(PState[0] == pssFalling) Woodman.SignalEvt(WM_EVT_HeartReturn);
 }
 
 #if UART_RX_ENABLED // ================= Command processing ====================

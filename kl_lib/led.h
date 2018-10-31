@@ -109,7 +109,8 @@ public:
 };
 #endif
 
-#if 1 // =========================== LedRGB Parent =============================
+#if 0 // =========================== LedRGB Parent =============================
+#define RGBTmrCallback
 void LedRGBTmrCallback(void *p);
 
 class LedRGBParent_t : public BaseSequencer_t<LedRGBChunk_t> {
@@ -165,7 +166,7 @@ public:
 };
 #endif
 
-#if 1 // ============================== LedRGB =================================
+#if 0 // ============================== LedRGB =================================
 class LedRGB_t : public LedRGBParent_t {
 public:
     LedRGB_t(
@@ -208,7 +209,7 @@ public:
 };
 #endif
 
-#if 1 // ====================== LedRGB with Luminocity =========================
+#if 0 // ====================== LedRGB with Luminocity =========================
 class LedRGBLum_t : public LedRGBParent_t {
 public:
     LedRGBLum_t(
