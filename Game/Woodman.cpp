@@ -31,6 +31,7 @@ void Woodman_t::ITask() {
                 case asExpectation:
                     Woodman.BacklightON();
                     Woodman.HeartBlinkON();
+                    TmrWait.StartOrRestart(MS2ST(TunnelLight_TimeOut_MS));   // по истечении паузы зажечь подсветку в тунеле
                     State = asWoodmanActive;
                 break;
                 default: break;
@@ -39,20 +40,22 @@ void Woodman_t::ITask() {
         if(EvtMsk & WM_EVT_HandcarParked) {
             if (State == asDoorOpened) {
                 Woodman.DefaultState();
-                State = asExpectation;
             }
         }
 
         if(EvtMsk & WM_EVT_HeartReturn) {
             Uart.Printf("EVT_HeartReturn\r");
-            State = asHeartReturned;
+            State = asWoodmanActive;
             Woodman.HeartBlinkOFF();
             Woodman.HeadUp();
-            TmrWait.StartOrRestart(MS2ST(HeadUp_TimeOut_MS));
+            TmrWait.StartOrRestart(MS2ST(HeadUp_TimeOut_MS));   // (подождать пока Дровосек поднимет голову)
         }
-        if(EvtMsk & WM_EVT_PauseTimeOut) {
+        if(EvtMsk & WM_EVT_WaitTimeOut) {
             Uart.Printf("EVT_WoodmanTimeOut\r");
             switch(State) {
+                case asWoodmanActive:
+                    TunnelLighting.StartOrContinue(lsqFadeIn);
+                break;
                 case asHeartReturned:
                     chEvtSignal(IPAppThd, EVT_WoodmanCameToLife);
                 break;
@@ -65,13 +68,15 @@ void Woodman_t::ITask() {
             for (uint8_t i=HeartBeginIndex; i<HeartEndIndex; i++)
                 if (!HeartLit) LedWs.ICurrentClr[i] = Brightness(HeartColor, HeartBrightness);
                 else LedWs.ICurrentClr[i] = sclBlack;
-            LedWs.ISetCurrentColors();
+            LedWs.SetCurrentColors();
             HeartLit = !HeartLit;
         }
         #define SmileCenterIndex    SmileBeginIndex + SmileWidth_LEDs
         if(EvtMsk & WM_EVT_GestureProcessing) {
             static uint8_t poss = 0;
-            static systime_t PastTime = 0;
+            static systime_t StartTime;
+            chSysLock();
+            if (poss == 0) StartTime = chVTGetSystemTimeX();
             for (uint8_t i = SmileCenterIndex; i < SmileWidth_LEDs; i++) {
                 if (i <= SmileCenterIndex+GestureMonologue[poss].Level) {
                     LedWs.ICurrentClr[SmileBrightness+i] = Brightness(SmileColor, SmileBrightness);
@@ -81,15 +86,13 @@ void Woodman_t::ITask() {
                     LedWs.ICurrentClr[SmileBrightness-i-1] = sclBlack;
                 };
             }
-            GestureProcess_Tmr.StartOrRestart(MS2ST(GestureMonologue[poss].Position_MS - PastTime));
+            GestureProcess_Tmr.StartOrRestart(StartTime - chVTGetSystemTimeX() - MS2ST(GestureMonologue[poss].Position_MS));
             LedWs.ISetCurrentColors();
-            if (poss < GestureLimit) {
+            if (poss < GestureLimit)
                 poss ++;
-                PastTime += GestureMonologue[poss].Position_MS;
-            } else {
+            else
                 poss = 0;
-                PastTime = 0;
-            }
+            chSysUnlock();
         }
 
     } // while true
@@ -111,7 +114,6 @@ void Woodman_t::Init() {
     TunnelLighting.Init();
     TunnelLighting.SetBrightness(0);
 //    TunnelLighting.SetPwmFrequencyHz(1000);
-    TunnelLighting.StartOrContinue(lsqFadeIn);
 
     // LEDs
     LedWs.Init();

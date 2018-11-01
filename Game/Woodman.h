@@ -30,10 +30,11 @@
 #define SmileWidth_LEDs         7
 #define SmileBeginIndex         16
 // Times
+#define TunnelLight_TimeOut_MS  10000
 #define HeadUp_TimeOut_MS       2000
 
 // Event mask
-#define WM_EVT_PauseTimeOut             EVENT_MASK(1)
+#define WM_EVT_WaitTimeOut              EVENT_MASK(1)
 #define WM_EVT_HeartBlinkTimeOut        EVENT_MASK(2)
 #define WM_EVT_GestureProcessing        EVENT_MASK(3)
 #define WM_EVT_HandcarInTransit         EVENT_MASK(4)
@@ -75,9 +76,9 @@ private:
     PinOutput_t DoorK2K3 {PwPort2_out};
     PinOutput_t HandcarSignal {PwPort4_out};
     PinInput_t Heart_pin {Port2_in};
-    TmrKL_t TmrWait { WM_EVT_PauseTimeOut, tktOneShot };
+    TmrKL_t TmrWait { WM_EVT_WaitTimeOut, tktOneShot };
     TmrKL_t HeartBlinkTmr {MS2ST(HeartBlinkPeriod_MS), WM_EVT_HeartBlinkTimeOut, tktPeriodic };
-    TmrKL_t GestureProcess_Tmr { WM_EVT_GestureProcessTimeOut, tktOneShot };
+    TmrKL_t GestureProcess_Tmr { WM_EVT_GestureProcessing, tktOneShot };
     thread_t *IPAppThd;
     bool BacklightOn = false;
 
@@ -99,7 +100,7 @@ public:
         HeartBlinkTmr.Stop();
         for (uint8_t i=HeartBeginIndex; i<HeartEndIndex; i++)
             LedWs.ICurrentClr[i] = HeartColor;
-        LedWs.ISetCurrentColors();
+        LedWs.SetCurrentColors();
     }
     void OpenDoor() { DoorK2K3.SetLo(); State = asDoorOpened; }
     void StartGesture() { chEvtSignal(PThread, WM_EVT_GestureProcessing); }
@@ -117,11 +118,15 @@ public:
 //    void RegisterAppThd(thread_t *PThd) { IPAppThd = PThd; }
 
     void DefaultState() {
-        Backlight.SetLo();  // отключить подсветку
+        State = asExpectation;
+        BacklightOFF();  // отключить подсветку дровосека
         Head.SetHi();       // замагнитить голову
         DoorK2K3.SetHi();   // замагнитить дверь на выход
-        HeartBlinkOFF();    // погосить подсветку сердца, рта и глаз
         HandcarSignal.SetLo();  // погасить сигнал на дрезину (про запас)
+        TunnelLighting.StartOrContinue(lsqFadeOut);
+        for (uint8_t i=0; i < LED_CNT; i++)     // погасить подсветку туннеля
+            LedWs.ICurrentClr[i] = sclBlack;    // погосить подсветку сердца, рта и глаз
+        LedWs.SetCurrentColors();
     }
 
     // Inner use

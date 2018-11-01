@@ -29,7 +29,7 @@
 #define VS_AMPF_Ch2_PIN GPIOC, 14, omPushPull
 #define VS_AMPF_Ch3_PIN GPIOC, 15, omPushPull
 typedef enum {
-    SndCh1, SndCh2, SndCh3,
+    SndCh1, SndCh2, SndCh3, SndCh_END,
 } SndChannels_t;
 
 // SPI
@@ -153,7 +153,7 @@ private:
     void SendZeroes();
     void IPlayNew();
 #if VS_AMPF_EXISTS
-    PinOutput_t Channel[] = {          // привязка каналов к физичесским выводам
+    PinOutput_t Channel[SndCh_END] = {          // привязка каналов к физичесским выводам
             Channel[SndCh1] = {VS_AMPF_Ch1_PIN},
             Channel[SndCh2] = {VS_AMPF_Ch2_PIN},
             Channel[SndCh3] = {VS_AMPF_Ch3_PIN},

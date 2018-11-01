@@ -108,12 +108,8 @@ void Sound_t::Init() {
     PinSetupAlterFunc(VS_GPIO, VS_SO,   omPushPull, pudNone, VS_AF);
     PinSetupAlterFunc(VS_GPIO, VS_SI,   omPushPull, pudNone, VS_AF);
 #if VS_AMPF_EXISTS
-    PinSetupOut(VS_AMPF_GPIO, VS_AMPF_Ch1_PIN, omPushPull);
-    PinSetupOut(VS_AMPF_GPIO, VS_AMPF_Ch2_PIN, omPushPull);
-    PinSetupOut(VS_AMPF_GPIO, VS_AMPF_Ch3_PIN, omPushPull);
-    Ch1_OFF();
-    Ch2_OFF();
-    Ch3_OFF();
+    for (uint8_t i = 0; i < SndCh_END; i++)
+        Channel[i].Init();
 #endif
 
     // ==== SPI init ====
@@ -150,9 +146,8 @@ void Sound_t::Init() {
 
 void Sound_t::Shutdown() {
 #if VS_AMPF_EXISTS
-    Ch1_OFF();
-    Ch2_OFF();
-    Ch3_OFF();
+    for (uint8_t i = 0; i < SndCh_END; i++)
+        Channel[i].SetLo();
 #endif
     Clk.MCO1Disable();  // Switch clk off as XTALI & XTALO grounded in reset
     Rst_Lo();           // enter shutdown mode

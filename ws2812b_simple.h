@@ -68,6 +68,11 @@ public:
         }
         return true;
     }
+    void SetCurrentColors() {
+        chSysLock();
+        ISetCurrentColors();
+        chSysUnlock();
+    }
     // Inner use
     ColorWS_t ICurrentClr[LED_CNT];
     void ISetCurrentColors();
