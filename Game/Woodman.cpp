@@ -22,41 +22,42 @@ static void WoodmanThread(void *arg) {
 __attribute__((noreturn))
 void Woodman_t::ITask() {
     while(true) {
-
         eventmask_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
 
         if(EvtMsk & WM_EVT_HandcarInTransit) {
-            Uart.Printf("EVT_HandcarInTransit\r");
+            Uart.Printf("HandcarInTransit\r");
             switch(State) {
-                case asExpectation:
-                    Woodman.BacklightON();
-                    Woodman.HeartBlinkON();
+                case wsExpectation:
+                    BacklightON();
+                    HeartBlinkON();
                     TmrWait.StartOrRestart(MS2ST(TunnelLight_TimeOut_MS));   // по истечении паузы зажечь подсветку в тунеле
-                    State = asWoodmanActive;
+                    State = wsWoodmanActive;
                 break;
                 default: break;
             }
         }
         if(EvtMsk & WM_EVT_HandcarParked) {
-            if (State == asDoorOpened) {
-                Woodman.DefaultState();
-            }
+            Uart.Printf("HandcarParked\r");
+//            if (State == wsDoorOpened) {
+                DefaultState();
+//            }
         }
 
         if(EvtMsk & WM_EVT_HeartReturn) {
-            Uart.Printf("EVT_HeartReturn\r");
-            State = asWoodmanActive;
-            Woodman.HeartBlinkOFF();
-            Woodman.HeadUp();
+            Uart.Printf("HeartReturn\r");
+            State = wsHeartReturned;
+            EyeON();
+            HeartBlinkOFF();
+            HeadUp();
             TmrWait.StartOrRestart(MS2ST(HeadUp_TimeOut_MS));   // (подождать пока Дровосек поднимет голову)
         }
         if(EvtMsk & WM_EVT_WaitTimeOut) {
-            Uart.Printf("EVT_WoodmanTimeOut\r");
+            Uart.Printf("WoodmanTimeOut\r");
             switch(State) {
-                case asWoodmanActive:
-                    TunnelLighting.StartOrContinue(lsqFadeIn);
+                case wsWoodmanActive:
+                    TunnelLightingON();
                 break;
-                case asHeartReturned:
+                case wsHeartReturned:
                     chEvtSignal(IPAppThd, EVT_WoodmanCameToLife);
                 break;
                 default: break;
@@ -71,28 +72,32 @@ void Woodman_t::ITask() {
             LedWs.SetCurrentColors();
             HeartLit = !HeartLit;
         }
-        #define SmileCenterIndex    SmileBeginIndex + SmileWidth_LEDs
         if(EvtMsk & WM_EVT_GestureProcessing) {
+            #define SmileCenterIndex    SmileBeginIndex + SmileWidth_LEDs
+            #define LasrTime            ST2MS(chVTGetSystemTime() - StartTime)
             static uint8_t poss = 0;
             static systime_t StartTime;
             chSysLock();
             if (poss == 0) StartTime = chVTGetSystemTimeX();
-            for (uint8_t i = SmileCenterIndex; i < SmileWidth_LEDs; i++) {
-                if (i <= SmileCenterIndex+GestureMonologue[poss].Level) {
-                    LedWs.ICurrentClr[SmileBrightness+i] = Brightness(SmileColor, SmileBrightness);
-                    LedWs.ICurrentClr[SmileBrightness-i-1] = Brightness(SmileColor, SmileBrightness);
+            for (uint8_t i = 0; i <= SmileWidth_LEDs; i++) {
+                if (i+1 <= GestureMonologue[poss].Level) {
+                    LedWs.ICurrentClr[SmileCenterIndex+i] = Brightness(SmileColor, SmileBrightness);
+                    LedWs.ICurrentClr[SmileCenterIndex-i-1] = Brightness(SmileColor, SmileBrightness);
                 } else {
-                    LedWs.ICurrentClr[SmileBrightness+i] = sclBlack;
-                    LedWs.ICurrentClr[SmileBrightness-i-1] = sclBlack;
+                    LedWs.ICurrentClr[SmileCenterIndex+i] = sclBlack;
+                    LedWs.ICurrentClr[SmileCenterIndex-i-1] = sclBlack;
                 };
             }
-            GestureProcess_Tmr.StartOrRestart(StartTime - chVTGetSystemTimeX() - MS2ST(GestureMonologue[poss].Position_MS));
             LedWs.ISetCurrentColors();
-            if (poss < GestureLimit)
-                poss ++;
-            else
-                poss = 0;
             chSysUnlock();
+            if (poss < GestureLimit-1) {
+                poss ++;
+                if (GestureMonologue[poss].Position_MS > GestureMonologue[poss-1].Position_MS)
+                    GestureProcess_Tmr.StartOrRestart( MS2ST(GestureMonologue[poss].Position_MS - LasrTime) );
+                else Uart.Printf("Gesture ERROR Position: poss[%u]=%u; poss[%u]=%u\r", poss, GestureMonologue[poss].Position_MS, poss-1, GestureMonologue[poss-1].Position_MS);
+            } else poss = 0;
+//            Uart.Printf("LasrTime: %u, Position_MS: %u\r", LasrTime, GestureMonologue[poss-1].Position_MS );
+//            Uart.Printf("Pause_MS: %u\r\r", GestureMonologue[poss].Position_MS-GestureMonologue[poss-1].Position_MS);
         }
 
     } // while true

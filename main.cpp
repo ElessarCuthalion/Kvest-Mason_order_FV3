@@ -147,7 +147,7 @@ while(true) {
     if(EvtMsk & EVT_PLAY_ENDS) {
 //        if (!ExternalPWR.IsHi()) {
         switch(Woodman.GetState()) {
-            case asHeartReturned:
+            case wsHeartReturned:
                 Sound.OFFChannel(WoodmanMonologue_Channel);
                 Woodman.OpenDoor();
                 Woodman.SignalToHandcar();
@@ -198,14 +198,15 @@ void BtnHandler(BtnEvt_t BtnEvt) {
 //    if(BtnEvt == beShortPress) Uart.Printf("Btn %u Short\r", BtnID);
 //    if(BtnEvt == beLongPress)  Uart.Printf("Btn %u Long\r", BtnID);
 //    if(BtnEvt == beRelease)    Uart.Printf("Btn %u Release\r", BtnID);
-//    if(BtnEvt == beRepeat)    Uart.Printf("Btn %u Repeat\r", BtnID);
+//    if(BtnEvt == beRepeat)     Uart.Printf("Btn %u Repeat\r", BtnID);
 //    if(BtnEvt == beClick)      Uart.Printf("Btn %u Click\r", BtnID);
 //    if(BtnEvt == beDoubleClick)Uart.Printf("Btn %u DoubleClick\r", BtnID);
 
     if (BtnEvt == beShortPress) {
-        if (!Woodman.BacklightIsOn() )
+        if (!Woodman.BacklightIsOn() ) {
             Woodman.BacklightON();
-        else {
+            Woodman.TunnelLightingON();
+        } else {
             Woodman.DefaultState();
         }
 //        switch(Woodman.GetState()) {
@@ -224,11 +225,17 @@ void Process5VSns(PinSnsState_t *PState, uint32_t Len) {
     else if(PState[0] == pssFalling) App.SignalEvt(EVT_USB_DISCONNECTED);
 }
 // for Woodman
+void ProcessDoorK1K2Sns(PinSnsState_t *PState, uint32_t Len) {
+    if(PState[0] == pssRising) Woodman.SignalEvt(WM_EVT_DoorK1K2Opened);
+}
 void ProcessHandcarStartSns(PinSnsState_t *PState, uint32_t Len) {
     if(PState[0] == pssFalling) Woodman.SignalEvt(WM_EVT_HandcarParked);
 }
 void ProcessHandcarCenterSns(PinSnsState_t *PState, uint32_t Len) {
     if(PState[0] == pssFalling) Woodman.SignalEvt(WM_EVT_HandcarInTransit);
+}
+void ProcessHandcarStopSns(PinSnsState_t *PState, uint32_t Len) {
+    if(PState[0] == pssFalling) Woodman.SignalEvt(WM_EVT_HandcarStoped);
 }
 void ProcessHeartSns(PinSnsState_t *PState, uint32_t Len) {
     if(PState[0] == pssFalling) Woodman.SignalEvt(WM_EVT_HeartReturn);
@@ -247,6 +254,12 @@ void App_t::OnCmd(Shell_t *PShell) {
         SndList.PlayRandomFileFromDir(PlayDir);
         PShell->Ack(retvOk);
     }
+
+    else if(PCmd->NameIs("GP")) {
+        App.SignalEvt(EVT_WoodmanCameToLife);
+        PShell->Ack(retvOk);
+    }
+
 
     else PShell->Ack(retvCmdUnknown);
 }
