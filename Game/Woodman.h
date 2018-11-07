@@ -22,19 +22,19 @@
 // Heart LEDs
 #define HeartBlinkPeriod_MS     1000
 #define HeartBeginIndex         0
-#define HeartEndIndex           15
+#define HeartEndIndex           13  // 14LEDs
 #define HeartColor              sclRed
 #define HeartBrightness         70
 // Smile LEDs
 #define SmileColor              sclBlue
 #define SmileBrightness         20
 #define SmileWidth_LEDs         7
-#define SmileBeginIndex         16
+#define SmileBeginIndex         14
 // Eye LEDs
 #define EyeColor                sclGreen
 #define EyeBrightness           20
-#define EyeLeftIndex            31
-#define EyeRightIndex           32
+#define EyeLeftIndex            28
+#define EyeRightIndex           29
 // Times
 #define TunnelLight_TimeOut_MS  10000
 #define HeadUp_TimeOut_MS       2000
@@ -54,7 +54,7 @@
 //enum TmrWoodmanState {wsPause, wsHandcarSignal};
 
 typedef enum {
-    wsExpectation, wsWoodmanActive, wsHeartReturned, wsDoorOpened,
+    wsExpectation, wsWoodmanActive, wsHeartReturned, wsCameToLife, wsDoorOpened,
 } WoodmanState_t;
 typedef struct {
     uint8_t Level;  // количество светодиодов
@@ -129,13 +129,10 @@ public:
     void TunnelLightingOFF() { TunnelLighting.StartOrContinue(lsqFadeOut); }
     void HeadUp() { Head.SetLo(); }
     void HeartBlinkON() { HeartBlinkTmr.StartOrRestart(); }
-    void HeartBlinkOFF() {
+    void EyeON_and_HeartBlinkOFF() {
         HeartBlinkTmr.Stop();
-        for (uint8_t i=HeartBeginIndex; i<HeartEndIndex; i++)
+        for (uint8_t i=HeartBeginIndex; i<=HeartEndIndex; i++)
             LedWs.ICurrentClr[i] = HeartColor;
-        LedWs.SetCurrentColors();
-    }
-    void EyeON() {
         LedWs.ICurrentClr[EyeLeftIndex] = Brightness(EyeColor, EyeBrightness);
         LedWs.ICurrentClr[EyeRightIndex] = Brightness(EyeColor, EyeBrightness);
         LedWs.SetCurrentColors();
@@ -157,11 +154,14 @@ public:
 
     void DefaultState() {
         State = wsExpectation;
-        BacklightOFF();  // отключить подсветку дровосека
+        BacklightOFF();     // отключить подсветку дровосека
         TunnelLightingOFF();// погасить подсветку туннеля
         Head.SetHi();       // замагнитить голову
         DoorK2K3.SetHi();   // замагнитить дверь на выход
         HandcarSignal.SetLo();  // погасить сигнал на дрезину (про запас)
+        TmrWait.Stop();
+        HeartBlinkTmr.Stop();
+        GestureProcess_Tmr.Stop();
         for (uint8_t i=0; i < LED_CNT; i++)
             LedWs.ICurrentClr[i] = sclBlack;    // погосить подсветку сердца, рта и глаз
         LedWs.SetCurrentColors();

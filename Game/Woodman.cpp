@@ -45,11 +45,12 @@ void Woodman_t::ITask() {
 
         if(EvtMsk & WM_EVT_HeartReturn) {
             Uart.Printf("HeartReturn\r");
-            State = wsHeartReturned;
-            EyeON();
-            HeartBlinkOFF();
-            HeadUp();
-            TmrWait.StartOrRestart(MS2ST(HeadUp_TimeOut_MS));   // (подождать пока Дровосек поднимет голову)
+            if (State < wsHeartReturned) {
+                State = wsHeartReturned;
+                EyeON_and_HeartBlinkOFF();
+                HeadUp();
+                TmrWait.StartOrRestart(MS2ST(HeadUp_TimeOut_MS));   // (подождать пока Дровосек поднимет голову)
+            }
         }
         if(EvtMsk & WM_EVT_WaitTimeOut) {
             Uart.Printf("WoodmanTimeOut\r");
@@ -58,6 +59,7 @@ void Woodman_t::ITask() {
                     TunnelLightingON();
                 break;
                 case wsHeartReturned:
+                    State = wsCameToLife;
                     chEvtSignal(IPAppThd, EVT_WoodmanCameToLife);
                 break;
                 default: break;
@@ -66,7 +68,7 @@ void Woodman_t::ITask() {
 
         if(EvtMsk & WM_EVT_HeartBlinkTimeOut) {
             static bool HeartLit = false;
-            for (uint8_t i=HeartBeginIndex; i<HeartEndIndex; i++)
+            for (uint8_t i=HeartBeginIndex; i<=HeartEndIndex; i++)
                 if (!HeartLit) LedWs.ICurrentClr[i] = Brightness(HeartColor, HeartBrightness);
                 else LedWs.ICurrentClr[i] = sclBlack;
             LedWs.SetCurrentColors();
@@ -79,7 +81,7 @@ void Woodman_t::ITask() {
             static systime_t StartTime;
             chSysLock();
             if (poss == 0) StartTime = chVTGetSystemTimeX();
-            for (uint8_t i = 0; i <= SmileWidth_LEDs; i++) {
+            for (uint8_t i = 0; i < SmileWidth_LEDs; i++) {
                 if (i+1 <= GestureMonologue[poss].Level) {
                     LedWs.ICurrentClr[SmileCenterIndex+i] = Brightness(SmileColor, SmileBrightness);
                     LedWs.ICurrentClr[SmileCenterIndex-i-1] = Brightness(SmileColor, SmileBrightness);

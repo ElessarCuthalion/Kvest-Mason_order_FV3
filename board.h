@@ -17,7 +17,7 @@
 // Sound
 #define PlayDir         "0:\\"
 // RGB LEDs
-#define LED_CNT         35  // Number of WS2812 LEDs
+#define LED_CNT         30  // Number of WS2812 LEDs
 
 
 // MCU type as defined in the ST header.
