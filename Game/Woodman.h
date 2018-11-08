@@ -38,6 +38,7 @@
 // Times
 #define TunnelLight_TimeOut_MS  10000
 #define HeadUp_TimeOut_MS       2000
+#define Wink_TimeOut_MS         700
 
 // Event mask
 #define WM_EVT_DoorK1K2Opened           EVENT_MASK(1)
@@ -48,19 +49,21 @@
 #define WM_EVT_HeartReturn              EVENT_MASK(6)
 #define WM_EVT_HeartBlinkTimeOut        EVENT_MASK(7)
 #define WM_EVT_GestureProcessing        EVENT_MASK(8)
+#define WM_EVT_ToWink                   EVENT_MASK(9)
+#define WM_EVT_SignalToHandcar          EVENT_MASK(10)
 
 
 
 //enum TmrWoodmanState {wsPause, wsHandcarSignal};
 
 typedef enum {
-    wsExpectation, wsWoodmanActive, wsHeartReturned, wsCameToLife, wsDoorOpened,
+    wsExpectation, wsWoodmanActive, wsHeartReturned, wsMonologueCompleted, wsDoorOpened,
 } WoodmanState_t;
 typedef struct {
     uint8_t Level;  // количество светодиодов
     systime_t Position_MS;  // время в которое они зажглись (позиция в ролике)
 }  Gesture_t;
-const Gesture_t GestureMonologue[] = {
+const Gesture_t WoodmanMonologue[] = {
         {0, 0},     // начальный момент времени
         {4, 120}, {2, 360}, {6, 440}, {4, 520},  {7, 760},
         {2, 1000}, {6, 1120}, {0, 1280}, {2, 1560}, {1, 1600}, {3, 1640}, {4, 1760}, {6, 1960},
@@ -88,7 +91,12 @@ const Gesture_t GestureMonologue[] = {
         {2, 23080}, {3, 23160}, {2, 23280}, {3, 23400}, {4, 23520}, {0, 23640}, {2, 23680}, {3, 23840}, {7, 23960},
         {2, 24120}, {1, 24160}, {3, 24200}, {4, 24360}, {0, 24400}, {6, 24440}, {2, 24640}, {0, 24720},
 };
-#define GestureLimit    countof(GestureMonologue)
+#define WoodmanMonologueLength  countof(WoodmanMonologue)
+const Gesture_t WoodmanSmile[] = {
+        {0, 0},     // начальный момент времени
+        {1, 1100}, {2, 1200}, {3, 1350}, {4, 1550}, {5, 1800}, {6, 2100}, {7, 2450},
+};
+#define WoodmanSmileLength  countof(WoodmanSmile)
 
 static ColorWS_t Brightness(ColorWS_t AColor, uint8_t APercent) {
     ColorWS_t Result;
@@ -110,6 +118,8 @@ private:
     TmrKL_t TmrWait { WM_EVT_WaitTimeOut, tktOneShot };
     TmrKL_t HeartBlinkTmr {MS2ST(HeartBlinkPeriod_MS), WM_EVT_HeartBlinkTimeOut, tktPeriodic };
     TmrKL_t GestureProcess_Tmr { WM_EVT_GestureProcessing, tktOneShot };
+    const Gesture_t *PGesture;
+    uint8_t GestureLength;
     thread_t *IPAppThd;
     bool BacklightOn = false;
 
@@ -137,18 +147,23 @@ public:
         LedWs.ICurrentClr[EyeRightIndex] = Brightness(EyeColor, EyeBrightness);
         LedWs.SetCurrentColors();
     }
+    void ToWink() { chEvtSignal(PThread, WM_EVT_ToWink); }
     void OpenDoor() { DoorK2K3.SetLo(); State = wsDoorOpened; }
-    void StartGesture() { chEvtSignal(PThread, WM_EVT_GestureProcessing); }
-    void SignalToHandcar() {
-        HandcarSignal.SetHi();
-        chThdSleepMilliseconds(5000);
-        HandcarSignal.SetLo();
+    void StartGesture(const Gesture_t *APGesture, const uint8_t AGestureLength) {
+        chSysLock();
+        PGesture = APGesture;
+//        PGesture = &WoodmanMonologue[0];
+        GestureLength = AGestureLength;
+        chEvtSignalI(PThread, WM_EVT_GestureProcessing);
+        chSysUnlock();
     }
+    void SignalToHandcar() { chEvtSignal(PThread, WM_EVT_SignalToHandcar); }
 
     void Pause_MS(systime_t ATime_MS) {
         TmrWait.StartOrRestart(MS2ST(ATime_MS));
     }
     WoodmanState_t GetState() { return State; }
+    void SetState(WoodmanState_t AState) {State = AState;}
 
 //    void RegisterAppThd(thread_t *PThd) { IPAppThd = PThd; }
 

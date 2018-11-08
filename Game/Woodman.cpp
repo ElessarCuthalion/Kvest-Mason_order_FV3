@@ -59,7 +59,6 @@ void Woodman_t::ITask() {
                     TunnelLightingON();
                 break;
                 case wsHeartReturned:
-                    State = wsCameToLife;
                     chEvtSignal(IPAppThd, EVT_WoodmanCameToLife);
                 break;
                 default: break;
@@ -82,7 +81,7 @@ void Woodman_t::ITask() {
             chSysLock();
             if (poss == 0) StartTime = chVTGetSystemTimeX();
             for (uint8_t i = 0; i < SmileWidth_LEDs; i++) {
-                if (i+1 <= GestureMonologue[poss].Level) {
+                if (i+1 <= PGesture[poss].Level) {
                     LedWs.ICurrentClr[SmileCenterIndex+i] = Brightness(SmileColor, SmileBrightness);
                     LedWs.ICurrentClr[SmileCenterIndex-i-1] = Brightness(SmileColor, SmileBrightness);
                 } else {
@@ -92,16 +91,33 @@ void Woodman_t::ITask() {
             }
             LedWs.ISetCurrentColors();
             chSysUnlock();
-            if (poss < GestureLimit-1) {
+            if (poss < GestureLength-1) {
                 poss ++;
-                if (GestureMonologue[poss].Position_MS > GestureMonologue[poss-1].Position_MS)
-                    GestureProcess_Tmr.StartOrRestart( MS2ST(GestureMonologue[poss].Position_MS - LasrTime) );
-                else Uart.Printf("Gesture ERROR Position: poss[%u]=%u; poss[%u]=%u\r", poss, GestureMonologue[poss].Position_MS, poss-1, GestureMonologue[poss-1].Position_MS);
-            } else poss = 0;
-//            Uart.Printf("LasrTime: %u, Position_MS: %u\r", LasrTime, GestureMonologue[poss-1].Position_MS );
-//            Uart.Printf("Pause_MS: %u\r\r", GestureMonologue[poss].Position_MS-GestureMonologue[poss-1].Position_MS);
+                if (PGesture[poss].Position_MS > PGesture[poss-1].Position_MS)
+                    GestureProcess_Tmr.StartOrRestart( MS2ST(PGesture[poss].Position_MS - LasrTime) );
+                else Uart.Printf("Gesture ERROR Position: poss[%u]=%u; poss[%u]=%u\r", poss, PGesture[poss].Position_MS, poss-1, PGesture[poss-1].Position_MS);
+    //            Uart.Printf("LasrTime: %u, Position_MS: %u\r", LasrTime, PGesture[poss-1].Position_MS );
+//                Uart.Printf("Pause_MS: %u\r", PGesture[poss].Position_MS-PGesture[poss-1].Position_MS);
+            } else {
+                poss = 0;
+                chEvtSignal(IPAppThd, EVT_WoodmanGestureCompleted);
+            }
         }
 
+        if(EvtMsk & WM_EVT_ToWink) {
+            Uart.Printf("WM_EVT_ToWink\r");
+            chThdSleepMilliseconds(1000);
+            LedWs.ICurrentClr[EyeLeftIndex] = sclBlack;
+            LedWs.SetCurrentColors();
+            chThdSleepMilliseconds(Wink_TimeOut_MS);
+            LedWs.ICurrentClr[EyeLeftIndex] = Brightness(EyeColor, EyeBrightness);;
+            LedWs.SetCurrentColors();
+        }
+        if(EvtMsk & WM_EVT_SignalToHandcar) {
+             HandcarSignal.SetHi();
+             chThdSleepMilliseconds(5000);
+             HandcarSignal.SetLo();
+         }
     } // while true
 }
 

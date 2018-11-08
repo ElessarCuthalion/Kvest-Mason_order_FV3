@@ -141,20 +141,31 @@ while(true) {
         Sound.ONChannel(WoodmanMonologue_Channel);
         Sound.SetVolume(WoodmanMonologue_VolLevel);
         Sound.Play(WoodmanMonologue_file);
-        Woodman.StartGesture();
+        Woodman.StartGesture(&WoodmanMonologue[0], WoodmanMonologueLength);
     }
 
     if(EvtMsk & EVT_PLAY_ENDS) {
 //        if (!ExternalPWR.IsHi()) {
         switch(Woodman.GetState()) {
             case wsHeartReturned:
+                Woodman.SetState(wsMonologueCompleted);
                 Sound.OFFChannel(WoodmanMonologue_Channel);
+                Woodman.StartGesture(&WoodmanSmile[0], WoodmanSmileLength);
+            break;
+            default: break;
+        }
+//        }
+    }
+
+    if(EvtMsk & EVT_WoodmanGestureCompleted) {
+        switch(Woodman.GetState()) {
+            case wsMonologueCompleted:
+                Woodman.ToWink();
                 Woodman.OpenDoor();
                 Woodman.SignalToHandcar();
             break;
             default: break;
         }
-//        }
     }
 
     if(EvtMsk & EVT_BUTTONS) {
@@ -206,6 +217,9 @@ void BtnHandler(BtnEvt_t BtnEvt) {
         if (!Woodman.BacklightIsOn() ) {
             Woodman.BacklightON();
             Woodman.TunnelLightingON();
+            Woodman.EyeON_and_HeartBlinkOFF();
+            chThdSleepMilliseconds(100);
+            Woodman.StartGesture(&WoodmanSmile[0], WoodmanSmileLength);
         } else {
             Woodman.DefaultState();
         }
@@ -255,11 +269,20 @@ void App_t::OnCmd(Shell_t *PShell) {
         PShell->Ack(retvOk);
     }
 
-    else if(PCmd->NameIs("GP")) {
+    else if(PCmd->NameIs("CameToLife")) {
         App.SignalEvt(EVT_WoodmanCameToLife);
         PShell->Ack(retvOk);
     }
-
+    else if(PCmd->NameIs("Smile")) {
+        Woodman.EyeON_and_HeartBlinkOFF();
+        Woodman.SetState(wsMonologueCompleted);
+        Woodman.StartGesture(&WoodmanSmile[0], WoodmanSmileLength);
+        PShell->Ack(retvOk);
+    }
+    else if(PCmd->NameIs("Wink")) {
+        Woodman.ToWink();
+        PShell->Ack(retvOk);
+    }
 
     else PShell->Ack(retvCmdUnknown);
 }

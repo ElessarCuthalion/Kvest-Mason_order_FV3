@@ -18,6 +18,7 @@
 #define EVT_ADC_DONE            EVENT_MASK(7)
 
 #define EVT_WoodmanCameToLife   EVENT_MASK(10)
+#define EVT_WoodmanGestureCompleted     EVENT_MASK(11)
 
 //#define EVT_LED_DONE            EVENT_MASK(16)
 
