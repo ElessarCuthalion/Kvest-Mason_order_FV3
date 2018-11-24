@@ -215,6 +215,7 @@ void BtnHandler(BtnEvt_t BtnEvt) {
 
     if (BtnEvt == beShortPress) {
         if (!Woodman.BacklightIsOn() ) {
+            Woodman.HeadUp();
             Woodman.BacklightON();
             Woodman.TunnelLightingON();
             Woodman.EyeON_and_HeartBlinkOFF();
