@@ -16,10 +16,11 @@
 #define EVT_PLAY_ENDS           EVENT_MASK(5)
 #define EVT_BUTTONS             EVENT_MASK(6)
 #define EVT_ADC_DONE            EVENT_MASK(7)
-
+// ============================== Woodman Events ===============================
 #define EVT_WoodmanCameToLife   EVENT_MASK(10)
 #define EVT_WoodmanGestureCompleted     EVENT_MASK(11)
+// =============================== Piano Events ================================
+#define EVT_PianoCodeOk         EVENT_MASK(10)
 
-//#define EVT_LED_DONE            EVENT_MASK(16)
 
 #endif /* EVT_MASK_H_ */

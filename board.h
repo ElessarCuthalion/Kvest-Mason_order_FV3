@@ -11,6 +11,10 @@
 
 // ==== General ====
 #define BOARD_NAME      "QuestPlatform_v1"
+#define WoodmanRoom     1
+#define PianoRoom       2
+
+#define QUEST_ROOM      PianoRoom
 
 // Default Settings
 #define APP_NAME        "Woodman"
@@ -53,6 +57,9 @@
 #define LED_CH3_in      GPIOB, 8, pudPullUp
 #define LED_CH4_in      GPIOB, 9, pudPullUp
 
+#define USER_RX_in      GPIOA, 1, pudPullUp
+#define USER_TX_in      GPIOA, 0, pudPullUp
+
 // Outputs
 #define Port1_out       GPIOC, 0, omPushPull
 #define Port2_out       GPIOC, 1, omPushPull
@@ -73,6 +80,10 @@
 #define LED_PWM2        { GPIOB, 7, TIM4, 2, invNotInverted, omPushPull, 512 }
 #define LED_PWM3        { GPIOB, 8, TIM4, 3, invNotInverted, omPushPull, 512 }
 #define LED_PWM4        { GPIOB, 9, TIM4, 4, invNotInverted, omPushPull, 512 }
+
+#define USER_RX_out     GPIOA, 1, omPushPull
+#define USER_TX_out     GPIOA, 0, omPushPull
+
 
 // Beeper
 

@@ -15,6 +15,7 @@
 #include "sound.h"
 #include "Soundlist.h"
 #include "Woodman.h"
+#include "Piano.h"
 
 
 #if 1 // ======================== Variables and defines ========================
@@ -76,8 +77,6 @@ int main() {
     // Sound
     Sound.Init();
     Sound.SetupSeqEndEvt(EVT_PLAY_ENDS);
-//    Sound.Ch1_ON();
-//    Sound.SetVolume(WoodmanMonologue_VolLevel);
 
 //    LoadSettings("Settings.ini");
     if (ExternalPWR.IsHi()) App.SignalEvt(EVT_USB_CONNECTED);
@@ -93,8 +92,13 @@ int main() {
 
     // Game
     State = asStandby;
+#if QUEST_ROOM == WoodmanRoom
     Woodman.Init();
     Woodman.DefaultState();
+#elif QUEST_ROOM == PianoRoom
+    Piano.Init();
+    Piano.DefaultState();
+#endif
 
 #endif
     // ==== Main cycle ====
@@ -137,6 +141,7 @@ void App_t::ITask() {
 while(true) {
     eventmask_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
 
+#if QUEST_ROOM == WoodmanRoom   // ---------------------------------------------
     if(EvtMsk & EVT_WoodmanCameToLife) {
         Sound.ONChannel(WoodmanMonologue_Channel);
         Sound.SetVolume(WoodmanMonologue_VolLevel);
@@ -167,6 +172,14 @@ while(true) {
             default: break;
         }
     }
+#elif QUEST_ROOM == PianoRoom   // ---------------------------------------------
+    if(EvtMsk & EVT_PianoCodeOk) {
+        Sound.Play(OpenedCupboard_file);    // шм€канье разбишвающегос€ €йца
+        Piano.OpenCupboard();
+    }
+
+
+#endif
 
     if(EvtMsk & EVT_BUTTONS) {
         BtnEvtInfo_t EInfo;
@@ -239,7 +252,7 @@ void Process5VSns(PinSnsState_t *PState, uint32_t Len) {
     if(PState[0] == pssRising) App.SignalEvt(EVT_USB_CONNECTED);
     else if(PState[0] == pssFalling) App.SignalEvt(EVT_USB_DISCONNECTED);
 }
-// for Woodman
+#if QUEST_ROOM == WoodmanRoom
 void ProcessDoorK1K2Sns(PinSnsState_t *PState, uint32_t Len) {
     if(PState[0] == pssRising) Woodman.SignalEvt(WM_EVT_DoorK1K2Opened);
 }
@@ -255,6 +268,57 @@ void ProcessHandcarStopSns(PinSnsState_t *PState, uint32_t Len) {
 void ProcessHeartSns(PinSnsState_t *PState, uint32_t Len) {
     if(PState[0] == pssFalling) Woodman.SignalEvt(WM_EVT_HeartReturn);
 }
+#elif QUEST_ROOM == PianoRoom
+void ProcessKey1(PinSnsState_t *PState, uint32_t Len) {
+    if(PState[0] == pssFalling) {
+        Piano.CodeProcessing(1);
+        Sound.Play(Piano_Key1file);
+        Piano.LightingON();
+    }
+}
+void ProcessKey2(PinSnsState_t *PState, uint32_t Len) {
+    if(PState[0] == pssFalling) {
+        Piano.CodeProcessing(2);
+        Sound.Play(Piano_Key2file);
+        Piano.LightingON();
+    }
+}
+void ProcessKey3(PinSnsState_t *PState, uint32_t Len) {
+    if(PState[0] == pssFalling) {
+        Piano.CodeProcessing(3);
+        Sound.Play(Piano_Key3file);
+        Piano.LightingON();
+    }
+}
+void ProcessKey4(PinSnsState_t *PState, uint32_t Len) {
+    if(PState[0] == pssFalling) {
+        Piano.CodeProcessing(4);
+        Sound.Play(Piano_Key4file);
+        Piano.LightingON();
+    }
+}
+void ProcessKey5(PinSnsState_t *PState, uint32_t Len) {
+    if(PState[0] == pssFalling) {
+        Piano.CodeProcessing(5);
+        Sound.Play(Piano_Key5file);
+        Piano.LightingON();
+    }
+}
+void ProcessKey6(PinSnsState_t *PState, uint32_t Len) {
+    if(PState[0] == pssFalling) {
+        Piano.CodeProcessing(6);
+        Sound.Play(Piano_Key6file);
+        Piano.LightingON();
+    }
+}
+void ProcessKey7(PinSnsState_t *PState, uint32_t Len) {
+    if(PState[0] == pssFalling) {
+        Piano.CodeProcessing(7);
+        Sound.Play(Piano_Key7file);
+        Piano.LightingON();
+    }
+}
+#endif
 
 #if UART_RX_ENABLED // ================= Command processing ====================
 void App_t::OnCmd(Shell_t *PShell) {

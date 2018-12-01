@@ -120,18 +120,12 @@ private:
     TmrKL_t GestureProcess_Tmr { WM_EVT_GestureProcessing, tktOneShot };
     const Gesture_t *PGesture;
     uint8_t GestureLength;
-    thread_t *IPAppThd;
     bool BacklightOn = false;
 
     WoodmanState_t State = wsExpectation;
+    thread_t *IPAppThd;
 
 public:
-    void SignalEvt(uint32_t EvtMsk) {
-        chSysLock();
-        chEvtSignalI(PThread, EvtMsk);
-        chSysUnlock();
-    }
-
     void BacklightON() { Backlight.SetHi(); BacklightOn = true; }
     void BacklightOFF() { Backlight.SetLo(); BacklightOn = false; }
     bool BacklightIsOn() { return BacklightOn; }
@@ -162,10 +156,16 @@ public:
     void Pause_MS(systime_t ATime_MS) {
         TmrWait.StartOrRestart(MS2ST(ATime_MS));
     }
+
+    void SignalEvt(uint32_t EvtMsk) {
+        chSysLock();
+        chEvtSignalI(PThread, EvtMsk);
+        chSysUnlock();
+    }
+//    void RegisterAppThd(thread_t *PThd) { IPAppThd = PThd; }
+
     WoodmanState_t GetState() { return State; }
     void SetState(WoodmanState_t AState) {State = AState;}
-
-//    void RegisterAppThd(thread_t *PThd) { IPAppThd = PThd; }
 
     void DefaultState() {
         State = wsExpectation;
