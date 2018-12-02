@@ -39,6 +39,9 @@ extern void ProcessKey5(PinSnsState_t *PState, uint32_t Len);
 extern void ProcessKey6(PinSnsState_t *PState, uint32_t Len);
 extern void ProcessKey7(PinSnsState_t *PState, uint32_t Len);
 
+#define PianoKeys_CNT   7
+extern void ProcessKeySens(PinSnsState_t *PState, uint32_t Len);
+
 const PinSns_t PinSns[] = {
         // 5V sns
         {ExternalPWR_Pin, Process5VSns},
@@ -52,13 +55,23 @@ const PinSns_t PinSns[] = {
         {Port4_in, ProcessHandcarStartSns},
         {Port5_in, ProcessHandcarStopSns},
 #elif QUEST_ROOM == PianoRoom
-        {Port1_in, ProcessKey1},
-        {Port2_in, ProcessKey2},
-        {Port3_in, ProcessKey3},
-        {Port4_in, ProcessKey4},
-        {Port5_in, ProcessKey5},
-        {USER_RX_in, ProcessKey6},
-        {USER_TX_in, ProcessKey7},
+        // Button
+        {PwPort5_in, ProcessButtons},
+        // Other sns
+        {Port1_in, ProcessKeySens},
+        {Port2_in, ProcessKeySens},
+        {Port3_in, ProcessKeySens},
+        {Port4_in, ProcessKeySens},
+        {Port5_in, ProcessKeySens},
+        {USER_RX_in, ProcessKeySens},
+        {USER_TX_in, ProcessKeySens},
+//        {Port1_in, ProcessKey1},
+//        {Port2_in, ProcessKey2},
+//        {Port3_in, ProcessKey3},
+//        {Port4_in, ProcessKey4},
+//        {Port5_in, ProcessKey5},
+//        {USER_RX_in, ProcessKey6},
+//        {USER_TX_in, ProcessKey7},
 #endif
 };
 #define PIN_SNS_CNT     countof(PinSns)

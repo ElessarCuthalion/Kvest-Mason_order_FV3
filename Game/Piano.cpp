@@ -26,10 +26,10 @@ void Piano_t::ITask() {
         eventmask_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
 
         if(EvtMsk & PI_EVT_ResetCode) {
-            —urrent—omb = 0;
+            CurrentComb = 0;
         }
         if(EvtMsk & PI_EVT_SignslOfCodeOk) {
-            —urrent—omb = 0;
+            CurrentComb = 0;
             TmrResetCode.Stop();
             chEvtSignal(IPAppThd, EVT_PianoCodeOk);
         }
@@ -39,12 +39,12 @@ void Piano_t::ITask() {
 void Piano_t::CodeProcessing(uint8_t KeyId) {
     TmrResetCode.StartOrRestart();
     TmrSignslEvtOfCodeOk.Stop();
-    —urrent—omb <<= 4;
-    —urrent—omb += KeyId;
-    —urrent—omb &= CodeMask;
-    if (—urrent—omb == PianoCode)
+    CurrentComb <<= 4;
+    CurrentComb += KeyId;
+    CurrentComb &= CodeMask;
+    if (CurrentComb == PianoCode)
         TmrSignslEvtOfCodeOk.StartOrRestart();
-    Uart.Printf("—urrent—omb: %X\r", —urrent—omb);
+    Uart.Printf("—urrent—omb: %X\r", CurrentComb);
 }
 
 
@@ -56,9 +56,6 @@ void Piano_t::Init() {
 
     // LEDs
 
-    // Sounds
-    Sound.ONChannel(Piano_Channel);
-    Sound.SetVolume(Piano_VolLevel);
     // ==== DREQ IRQ ====
 //    IDreq.Init(ttRising);
     // ==== Thread ====

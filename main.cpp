@@ -8,6 +8,7 @@
 
 #include "main.h"
 #include "SimpleSensors.h"
+#include "PinSnsSettings.h"
 #include "buttons.h"
 #include "kl_adc.h"
 //#include "led.h"
@@ -174,6 +175,8 @@ while(true) {
     }
 #elif QUEST_ROOM == PianoRoom   // ---------------------------------------------
     if(EvtMsk & EVT_PianoCodeOk) {
+        Sound.ONChannelOnly(Cupboard_Channel);
+        Sound.SetVolume(Cupboard_VolLevel);
         Sound.Play(OpenedCupboard_file);    // шм€канье разбишвающегос€ €йца
         Piano.OpenCupboard();
     }
@@ -225,7 +228,7 @@ void BtnHandler(BtnEvt_t BtnEvt) {
 //    if(BtnEvt == beRepeat)     Uart.Printf("Btn %u Repeat\r", BtnID);
 //    if(BtnEvt == beClick)      Uart.Printf("Btn %u Click\r", BtnID);
 //    if(BtnEvt == beDoubleClick)Uart.Printf("Btn %u DoubleClick\r", BtnID);
-
+#if QUEST_ROOM == WoodmanRoom
     if (BtnEvt == beShortPress) {
         if (!Woodman.BacklightIsOn() ) {
             Woodman.HeadUp();
@@ -237,12 +240,12 @@ void BtnHandler(BtnEvt_t BtnEvt) {
         } else {
             Woodman.DefaultState();
         }
-//        switch(Woodman.GetState()) {
-//            case beShortPress:
-//                break;
-//            default: break;
-//        }
     }
+#elif QUEST_ROOM == PianoRoom
+    if (BtnEvt == beShortPress) {
+        Piano.DefaultState();
+    }
+#endif
 }
 
 
@@ -269,6 +272,20 @@ void ProcessHeartSns(PinSnsState_t *PState, uint32_t Len) {
     if(PState[0] == pssFalling) Woodman.SignalEvt(WM_EVT_HeartReturn);
 }
 #elif QUEST_ROOM == PianoRoom
+void ProcessKeySens(PinSnsState_t *PState, uint32_t Len) {
+    for(uint8_t i=0; i<PianoKeys_CNT; i++)
+        if(PState[i] == pssFalling) {
+            if (Piano.GetState() == psExpectation) {
+                Piano.SetState(psMelodyPlaying);
+                Sound.ONChannelOnly(Piano_Channel);
+                Sound.SetVolume(Piano_VolLevel);
+                Piano.LightingON();
+            }
+            Piano.CodeProcessing(i+1);
+            Sound.Play(PianoKeysFileNames[i]);
+        }
+}
+#elif 0
 void ProcessKey1(PinSnsState_t *PState, uint32_t Len) {
     if(PState[0] == pssFalling) {
         Piano.CodeProcessing(1);

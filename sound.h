@@ -211,6 +211,12 @@ public:
     uint32_t GetPosition() { return IFile.fptr; }
 #if VS_AMPF_EXISTS
     void ONChannel(SndChannels_t AChannel) { Channel[AChannel].SetHi(); }
+    void ONChannelOnly(SndChannels_t AChannel) {
+        for (uint8_t i = 0; i < SndCh_END; i++)
+            if (i == AChannel)
+                Channel[i].SetHi();
+            else Channel[i].SetLo();
+    }
     void OFFChannel(SndChannels_t AChannel) { Channel[AChannel].SetLo(); }
 #endif
     // Inner use
