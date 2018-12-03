@@ -23,22 +23,16 @@
 
 // Button handler
 extern void ProcessButtons(PinSnsState_t *PState, uint32_t Len);
+// USB detect
 extern void Process5VSns(PinSnsState_t *PState, uint32_t Len);
 
+// for Woodman
 extern void ProcessDoorK1K2Sns(PinSnsState_t *PState, uint32_t Len);
 extern void ProcessHandcarStartSns(PinSnsState_t *PState, uint32_t Len);
 extern void ProcessHandcarCenterSns(PinSnsState_t *PState, uint32_t Len);
 extern void ProcessHandcarStopSns(PinSnsState_t *PState, uint32_t Len);
 extern void ProcessHeartSns(PinSnsState_t *PState, uint32_t Len);
-
-extern void ProcessKey1(PinSnsState_t *PState, uint32_t Len);
-extern void ProcessKey2(PinSnsState_t *PState, uint32_t Len);
-extern void ProcessKey3(PinSnsState_t *PState, uint32_t Len);
-extern void ProcessKey4(PinSnsState_t *PState, uint32_t Len);
-extern void ProcessKey5(PinSnsState_t *PState, uint32_t Len);
-extern void ProcessKey6(PinSnsState_t *PState, uint32_t Len);
-extern void ProcessKey7(PinSnsState_t *PState, uint32_t Len);
-
+// for Piano
 #define PianoKeys_CNT   7
 extern void ProcessKeySens(PinSnsState_t *PState, uint32_t Len);
 
@@ -65,13 +59,6 @@ const PinSns_t PinSns[] = {
         {Port5_in, ProcessKeySens},
         {USER_RX_in, ProcessKeySens},
         {USER_TX_in, ProcessKeySens},
-//        {Port1_in, ProcessKey1},
-//        {Port2_in, ProcessKey2},
-//        {Port3_in, ProcessKey3},
-//        {Port4_in, ProcessKey4},
-//        {Port5_in, ProcessKey5},
-//        {USER_RX_in, ProcessKey6},
-//        {USER_TX_in, ProcessKey7},
 #endif
 };
 #define PIN_SNS_CNT     countof(PinSns)

@@ -176,11 +176,13 @@ while(true) {
 #elif QUEST_ROOM == PianoRoom   // ---------------------------------------------
     if(EvtMsk & EVT_PianoCodeOk) {
         Sound.ONChannelOnly(Cupboard_Channel);
+//        Sound.OFFChannel(Piano_Channel);
+//        Sound.ONChannel(Cupboard_Channel);
+        chThdSleepMilliseconds(500);
         Sound.SetVolume(Cupboard_VolLevel);
         Sound.Play(OpenedCupboard_file);    // шм€канье разбишвающегос€ €йца
         Piano.OpenCupboard();
     }
-
 
 #endif
 
@@ -275,65 +277,18 @@ void ProcessHeartSns(PinSnsState_t *PState, uint32_t Len) {
 void ProcessKeySens(PinSnsState_t *PState, uint32_t Len) {
     for(uint8_t i=0; i<PianoKeys_CNT; i++)
         if(PState[i] == pssFalling) {
-            if (Piano.GetState() == psExpectation) {
+            if (Piano.GetState() != psMelodyPlaying) {
                 Piano.SetState(psMelodyPlaying);
                 Sound.ONChannelOnly(Piano_Channel);
+//                Sound.OFFChannel(Cupboard_Channel);
+//                Sound.ONChannel(Piano_Channel);
+                chThdSleepMilliseconds(500);
                 Sound.SetVolume(Piano_VolLevel);
                 Piano.LightingON();
             }
             Piano.CodeProcessing(i+1);
             Sound.Play(PianoKeysFileNames[i]);
         }
-}
-#elif 0
-void ProcessKey1(PinSnsState_t *PState, uint32_t Len) {
-    if(PState[0] == pssFalling) {
-        Piano.CodeProcessing(1);
-        Sound.Play(Piano_Key1file);
-        Piano.LightingON();
-    }
-}
-void ProcessKey2(PinSnsState_t *PState, uint32_t Len) {
-    if(PState[0] == pssFalling) {
-        Piano.CodeProcessing(2);
-        Sound.Play(Piano_Key2file);
-        Piano.LightingON();
-    }
-}
-void ProcessKey3(PinSnsState_t *PState, uint32_t Len) {
-    if(PState[0] == pssFalling) {
-        Piano.CodeProcessing(3);
-        Sound.Play(Piano_Key3file);
-        Piano.LightingON();
-    }
-}
-void ProcessKey4(PinSnsState_t *PState, uint32_t Len) {
-    if(PState[0] == pssFalling) {
-        Piano.CodeProcessing(4);
-        Sound.Play(Piano_Key4file);
-        Piano.LightingON();
-    }
-}
-void ProcessKey5(PinSnsState_t *PState, uint32_t Len) {
-    if(PState[0] == pssFalling) {
-        Piano.CodeProcessing(5);
-        Sound.Play(Piano_Key5file);
-        Piano.LightingON();
-    }
-}
-void ProcessKey6(PinSnsState_t *PState, uint32_t Len) {
-    if(PState[0] == pssFalling) {
-        Piano.CodeProcessing(6);
-        Sound.Play(Piano_Key6file);
-        Piano.LightingON();
-    }
-}
-void ProcessKey7(PinSnsState_t *PState, uint32_t Len) {
-    if(PState[0] == pssFalling) {
-        Piano.CodeProcessing(7);
-        Sound.Play(Piano_Key7file);
-        Piano.LightingON();
-    }
 }
 #endif
 
@@ -363,6 +318,11 @@ void App_t::OnCmd(Shell_t *PShell) {
     }
     else if(PCmd->NameIs("Wink")) {
         Woodman.ToWink();
+        PShell->Ack(retvOk);
+    }
+
+    else if(PCmd->NameIs("PianoCodeOk")) {
+        App.SignalEvt(EVT_PianoCodeOk);
         PShell->Ack(retvOk);
     }
 

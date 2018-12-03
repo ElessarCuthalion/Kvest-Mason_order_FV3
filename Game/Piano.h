@@ -25,13 +25,6 @@ const char PianoKeysFileNames[][9] = {
         {"Key6.mp3"},
         {"Key7.mp3"},
 };
-//#define Piano_Key1file  "Key1.mp3"
-//#define Piano_Key2file  "Key2.mp3"
-//#define Piano_Key3file  "Key3.mp3"
-//#define Piano_Key4file  "Key4.mp3"
-//#define Piano_Key5file  "Key5.mp3"
-//#define Piano_Key6file  "Key6.mp3"
-//#define Piano_Key7file  "Key7.mp3"
 #define Cupboard_Channel    SndCh2
 #define Cupboard_VolLevel   240
 #define OpenedCupboard_file "OpenedCupboard.mp3"
@@ -45,7 +38,7 @@ const char PianoKeysFileNames[][9] = {
 #define PI_EVT_SignslOfCodeOk   EVENT_MASK(2)
 
 #define PianoCode       0x1232167
-#define CodeMask        0b1111111
+#define CodeMask        0xFFFFFFF
 
 
 typedef enum {

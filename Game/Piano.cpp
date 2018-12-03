@@ -52,12 +52,15 @@ void Piano_t::CodeProcessing(uint8_t KeyId) {
 
 void Piano_t::Init() {
     // ==== GPIO init ====
-
-
+    Cupboard.Init();
+    Lighting.Init();
     // LEDs
 
+    IPAppThd = chThdGetSelfX();
     // ==== DREQ IRQ ====
 //    IDreq.Init(ttRising);
     // ==== Thread ====
     PThread = chThdCreateStatic(waPianoThread, sizeof(waPianoThread), NORMALPRIO, (tfunc_t)PianoThread, NULL);
+    TmrResetCode.Init(PThread);
+    TmrSignslEvtOfCodeOk.Init(PThread);
 }
