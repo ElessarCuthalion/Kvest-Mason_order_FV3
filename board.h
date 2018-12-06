@@ -41,6 +41,8 @@
 #define BUTTONS_CNT     1
 
 // Inputs
+#define Opto_in         GPIOB, 4, pudPullUp
+
 #define Port1_in        GPIOC, 0, pudPullUp
 #define Port2_in        GPIOC, 1, pudPullUp
 #define Port3_in        GPIOC, 2, pudPullUp
@@ -61,6 +63,8 @@
 #define USER_TX_in      GPIOA, 0, pudPullUp
 
 // Outputs
+#define Opto_out        GPIOB, 4, omPushPull
+
 #define Port1_out       GPIOC, 0, omPushPull
 #define Port2_out       GPIOC, 1, omPushPull
 #define Port3_out       GPIOC, 2, omPushPull

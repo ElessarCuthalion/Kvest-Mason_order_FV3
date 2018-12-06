@@ -176,11 +176,10 @@ while(true) {
 #elif QUEST_ROOM == PianoRoom   // ---------------------------------------------
     if(EvtMsk & EVT_PianoCodeOk) {
         Sound.ONChannelOnly(Cupboard_Channel);
-//        Sound.OFFChannel(Piano_Channel);
-//        Sound.ONChannel(Cupboard_Channel);
         chThdSleepMilliseconds(500);
         Sound.SetVolume(Cupboard_VolLevel);
-        Sound.Play(OpenedCupboard_file);    // шм€канье разбишвающегос€ €йца
+        Sound.Play(OpenedCupboard_file);
+        Piano.CupboardBacklightON();
         Piano.OpenCupboard();
     }
 
@@ -245,7 +244,9 @@ void BtnHandler(BtnEvt_t BtnEvt) {
     }
 #elif QUEST_ROOM == PianoRoom
     if (BtnEvt == beShortPress) {
-        Piano.DefaultState();
+        if (Piano.CommonLightingIsOn())
+            Piano.DefaultState();
+        else Piano.CommonLightingON();
     }
 #endif
 }
@@ -277,14 +278,16 @@ void ProcessHeartSns(PinSnsState_t *PState, uint32_t Len) {
 void ProcessKeySens(PinSnsState_t *PState, uint32_t Len) {
     for(uint8_t i=0; i<PianoKeys_CNT; i++)
         if(PState[i] == pssFalling) {
-            if (Piano.GetState() != psMelodyPlaying) {
-                Piano.SetState(psMelodyPlaying);
-                Sound.ONChannelOnly(Piano_Channel);
-//                Sound.OFFChannel(Cupboard_Channel);
-//                Sound.ONChannel(Piano_Channel);
-                chThdSleepMilliseconds(500);
-                Sound.SetVolume(Piano_VolLevel);
-                Piano.LightingON();
+            switch(Piano.GetState()) {
+                 case psExpectation:
+                     Piano.SetState(psMelodyPlaying);
+                     Piano.CommonLightingON();
+                 case psCupboardOpened:
+                     Sound.ONChannelOnly(Piano_Channel);
+//                     chThdSleepMilliseconds(500);
+                     Sound.SetVolume(Piano_VolLevel);
+                 break;
+                 default: break;
             }
             Piano.CodeProcessing(i+1);
             Sound.Play(PianoKeysFileNames[i]);

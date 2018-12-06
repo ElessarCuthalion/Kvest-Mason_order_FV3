@@ -44,7 +44,7 @@ void Piano_t::CodeProcessing(uint8_t KeyId) {
     CurrentComb &= CodeMask;
     if (CurrentComb == PianoCode)
         TmrSignslEvtOfCodeOk.StartOrRestart();
-    Uart.Printf("—urrent—omb: %X\r", CurrentComb);
+//    Uart.Printf("—urrent—omb: %X\r", CurrentComb);
 }
 
 
@@ -52,8 +52,9 @@ void Piano_t::CodeProcessing(uint8_t KeyId) {
 
 void Piano_t::Init() {
     // ==== GPIO init ====
-    Cupboard.Init();
-    Lighting.Init();
+    CupboardBacklight.Init();
+    CupboardLock.Init();
+    CommonLight.Init();
     // LEDs
 
     IPAppThd = chThdGetSelfX();

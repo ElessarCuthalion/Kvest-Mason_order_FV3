@@ -15,7 +15,7 @@
 
 // Sounds
 #define Piano_Channel   SndCh1
-#define Piano_VolLevel  240
+#define Piano_VolLevel  250
 const char PianoKeysFileNames[][9] = {
         {"Key1.mp3"},
         {"Key2.mp3"},
@@ -26,8 +26,8 @@ const char PianoKeysFileNames[][9] = {
         {"Key7.mp3"},
 };
 #define Cupboard_Channel    SndCh2
-#define Cupboard_VolLevel   240
-#define OpenedCupboard_file "OpenedCupboard.mp3"
+#define Cupboard_VolLevel   210
+#define OpenedCupboard_file "DoDo_song.mp3"
 
 // Times
 #define ResetCode_TimeOut_MS            10000
@@ -49,19 +49,24 @@ class Piano_t {
 private:
     TmrKL_t TmrResetCode { MS2ST(ResetCode_TimeOut_MS), PI_EVT_ResetCode, tktOneShot };
     TmrKL_t TmrSignslEvtOfCodeOk { MS2ST(SignslEvtOfCodeOk_TimeOut_MS), PI_EVT_SignslOfCodeOk, tktOneShot };
-    PinOutput_t Cupboard {PwPort1_out};
-    PinOutput_t Lighting {PwPort2_out};
+    PinOutput_t CupboardLock {PwPort1_out};
+    PinOutput_t CupboardBacklight {PwPort2_out};
+    PinOutput_t CommonLight {PwPort3_out};
     uint32_t CurrentComb = 0;
+    bool CommonLightON = false;
 
     thread_t *IPAppThd;
     PianoState_t State = psExpectation;
 
 public:
     void CodeProcessing(uint8_t KeyId);
-    void LightingON() { Lighting.SetLo(); };
-    void LightingOFF() { Lighting.SetHi(); };
-    void OpenCupboard() { Cupboard.SetLo(); State = psCupboardOpened; };
-    void CloseCupboard() { Cupboard.SetHi(); };
+    void CommonLightingON() { CommonLight.SetHi(); CommonLightON = true; };
+    void CommonLightingOFF() { CommonLight.SetLo(); CommonLightON = false; };
+    bool CommonLightingIsOn() { return CommonLightON; }
+    void OpenCupboard() { CupboardLock.SetLo(); State = psCupboardOpened; };
+    void CloseCupboard() { CupboardLock.SetHi(); };
+    void CupboardBacklightON() { CupboardBacklight.SetHi(); };
+    void CupboardBacklightOFF() { CupboardBacklight.SetLo(); };
 
     void SignalEvt(uint32_t EvtMsk) {
         chSysLock();
@@ -75,8 +80,9 @@ public:
 
     void DefaultState() {
         State = psExpectation;
-        LightingOFF();
+        CommonLightingOFF();
         CloseCupboard();
+        CupboardBacklightOFF();
     }
 
     // Inner use
