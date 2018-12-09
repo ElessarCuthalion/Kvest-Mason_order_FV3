@@ -15,7 +15,7 @@
 
 // Sounds
 #define Piano_Channel   SndCh1
-#define Piano_VolLevel  250
+#define Piano_VolLevel  220
 const char PianoKeysFileNames[][9] = {
         {"Key1.mp3"},
         {"Key2.mp3"},
@@ -26,12 +26,12 @@ const char PianoKeysFileNames[][9] = {
         {"Key7.mp3"},
 };
 #define Cupboard_Channel    SndCh2
-#define Cupboard_VolLevel   210
+#define Cupboard_VolLevel   235
 #define OpenedCupboard_file "DoDo_song.mp3"
 
 // Times
 #define ResetCode_TimeOut_MS            10000
-#define SignslEvtOfCodeOk_TimeOut_MS    3000
+#define SignslEvtOfCodeOk_TimeOut_MS    2000
 
 // Event mask
 #define PI_EVT_ResetCode        EVENT_MASK(1)
