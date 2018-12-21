@@ -17,6 +17,7 @@
 
 // Sound
 #define WoodmanMonologue_file       "WoodmanMonologue.mp3"
+#define WoodmanFarewell_file        "WoodmanFarewell.mp3"       // переименовать файл на флешке!
 #define WoodmanMonologue_VolLevel   240
 #define WoodmanMonologue_Channel    SndCh1
 // Heart LEDs
@@ -90,13 +91,20 @@ const Gesture_t WoodmanMonologue[] = {
         {2, 22080}, {7, 22120}, {4, 22240}, {7, 22280}, {1, 22520}, {0, 22640}, {7, 22880},
         {2, 23080}, {3, 23160}, {2, 23280}, {3, 23400}, {4, 23520}, {0, 23640}, {2, 23680}, {3, 23840}, {7, 23960},
         {2, 24120}, {1, 24160}, {3, 24200}, {4, 24360}, {0, 24400}, {6, 24440}, {2, 24640}, {0, 24720},
+        {0, 0},     // окончание
 };
-#define WoodmanMonologueLength  countof(WoodmanMonologue)
 const Gesture_t WoodmanSmile[] = {
         {0, 0},     // начальный момент времени
         {1, 1100}, {2, 1200}, {3, 1350}, {4, 1550}, {5, 1800}, {6, 2100}, {7, 2450},
+        {0, 0},     // окончание
 };
-#define WoodmanSmileLength  countof(WoodmanSmile)
+const Gesture_t WoodmanFarewell[] = {
+        {0, 0},     // начальный момент времени
+        {4, 520}, {3, 600}, {4, 720}, {6, 800}, {1, 960},
+        {7, 1080}, {4, 1240}, {2, 1320}, {3, 1400}, {4, 1600}, {7, 1840},
+        {1, 2000}, {3, 2120}, {7, 2240}, {5, 2400}, {3, 2480}, {1, 2560}, {0, 2640},
+        {0, 0},     // окончание
+};
 
 static ColorWS_t Brightness(ColorWS_t AColor, uint8_t APercent) {
     ColorWS_t Result;
@@ -119,7 +127,6 @@ private:
     TmrKL_t HeartBlinkTmr {MS2ST(HeartBlinkPeriod_MS), WM_EVT_HeartBlinkTimeOut, tktPeriodic };
     TmrKL_t GestureProcess_Tmr { WM_EVT_GestureProcessing, tktOneShot };
     const Gesture_t *PGesture;
-    uint8_t GestureLength;
     bool BacklightOn = false;
 
     WoodmanState_t State = wsExpectation;
@@ -143,11 +150,9 @@ public:
     }
     void ToWink() { chEvtSignal(PThread, WM_EVT_ToWink); }
     void OpenDoor() { DoorK2K3.SetLo(); State = wsDoorOpened; }
-    void StartGesture(const Gesture_t *APGesture, const uint8_t AGestureLength) {
+    void StartGesture(const Gesture_t *APGesture) {
         chSysLock();
         PGesture = APGesture;
-//        PGesture = &WoodmanMonologue[0];
-        GestureLength = AGestureLength;
         chEvtSignalI(PThread, WM_EVT_GestureProcessing);
         chSysUnlock();
     }

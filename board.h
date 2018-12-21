@@ -14,7 +14,7 @@
 #define WoodmanRoom     1
 #define PianoRoom       2
 
-#define QUEST_ROOM      PianoRoom
+#define QUEST_ROOM      WoodmanRoom
 
 // Default Settings
 #define APP_NAME        "Woodman"

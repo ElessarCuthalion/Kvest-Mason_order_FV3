@@ -147,7 +147,7 @@ while(true) {
         Sound.ONChannel(WoodmanMonologue_Channel);
         Sound.SetVolume(WoodmanMonologue_VolLevel);
         Sound.Play(WoodmanMonologue_file);
-        Woodman.StartGesture(&WoodmanMonologue[0], WoodmanMonologueLength);
+        Woodman.StartGesture(&WoodmanMonologue[0]);
     }
 
     if(EvtMsk & EVT_PLAY_ENDS) {
@@ -156,7 +156,7 @@ while(true) {
             case wsHeartReturned:
                 Woodman.SetState(wsMonologueCompleted);
                 Sound.OFFChannel(WoodmanMonologue_Channel);
-                Woodman.StartGesture(&WoodmanSmile[0], WoodmanSmileLength);
+                Woodman.StartGesture(&WoodmanSmile[0]);
             break;
             default: break;
         }
@@ -237,7 +237,7 @@ void BtnHandler(BtnEvt_t BtnEvt) {
             Woodman.TunnelLightingON();
             Woodman.EyeON_and_HeartBlinkOFF();
             chThdSleepMilliseconds(100);
-            Woodman.StartGesture(&WoodmanSmile[0], WoodmanSmileLength);
+            Woodman.StartGesture(&WoodmanSmile[0]);
         } else {
             Woodman.DefaultState();
         }
@@ -316,7 +316,7 @@ void App_t::OnCmd(Shell_t *PShell) {
     else if(PCmd->NameIs("Smile")) {
         Woodman.EyeON_and_HeartBlinkOFF();
         Woodman.SetState(wsMonologueCompleted);
-        Woodman.StartGesture(&WoodmanSmile[0], WoodmanSmileLength);
+        Woodman.StartGesture(&WoodmanSmile[0]);
         PShell->Ack(retvOk);
     }
     else if(PCmd->NameIs("Wink")) {

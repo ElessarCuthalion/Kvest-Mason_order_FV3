@@ -91,14 +91,13 @@ void Woodman_t::ITask() {
             }
             LedWs.ISetCurrentColors();
             chSysUnlock();
-            if (poss < GestureLength-1) {
-                poss ++;
-                if (PGesture[poss].Position_MS > PGesture[poss-1].Position_MS)
-                    GestureProcess_Tmr.StartOrRestart( MS2ST(PGesture[poss].Position_MS - LasrTime) );
-                else Uart.Printf("Gesture ERROR Position: poss[%u]=%u; poss[%u]=%u\r", poss, PGesture[poss].Position_MS, poss-1, PGesture[poss-1].Position_MS);
-    //            Uart.Printf("LasrTime: %u, Position_MS: %u\r", LasrTime, PGesture[poss-1].Position_MS );
+            poss ++;
+            if (PGesture[poss].Position_MS > PGesture[poss-1].Position_MS)
+                GestureProcess_Tmr.StartOrRestart( MS2ST(PGesture[poss].Position_MS - LasrTime) );
+            else {
+                Uart.Printf("Gesture end Position: poss[%u]=%u; poss[%u]=%u\r", poss, PGesture[poss].Position_MS, poss-1, PGesture[poss-1].Position_MS);
+//                Uart.Printf("LasrTime: %u, Position_MS: %u\r", LasrTime, PGesture[poss-1].Position_MS );
 //                Uart.Printf("Pause_MS: %u\r", PGesture[poss].Position_MS-PGesture[poss-1].Position_MS);
-            } else {
                 poss = 0;
                 chEvtSignal(IPAppThd, EVT_WoodmanGestureCompleted);
             }
