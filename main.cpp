@@ -247,6 +247,8 @@ void BtnHandler(BtnEvt_t BtnEvt) {
         if (Piano.CommonLightingIsOn())
             Piano.DefaultState();
         else Piano.CommonLightingON();
+    } else if (BtnEvt == beLongPress) {
+        App.SignalEvt(EVT_PianoCodeOk);
     }
 #endif
 }

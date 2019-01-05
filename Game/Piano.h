@@ -60,8 +60,8 @@ private:
 
 public:
     void CodeProcessing(uint8_t KeyId);
-    void CommonLightingON() { CommonLight.SetHi(); CommonLightON = true; };
-    void CommonLightingOFF() { CommonLight.SetLo(); CommonLightON = false; };
+    void CommonLightingON() { CommonLight.SetLo(); CommonLightON = true; };     // свет нормально-включён
+    void CommonLightingOFF() { CommonLight.SetHi(); CommonLightON = false; };
     bool CommonLightingIsOn() { return CommonLightON; }
     void OpenCupboard() { CupboardLock.SetLo(); State = psCupboardOpened; };
     void CloseCupboard() { CupboardLock.SetHi(); };
