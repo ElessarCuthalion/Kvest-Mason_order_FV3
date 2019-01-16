@@ -243,7 +243,7 @@ void BtnHandler(BtnEvt_t BtnEvt) {
         }
     }
 #elif QUEST_ROOM == PianoRoom
-    if (BtnEvt == beShortPress) {
+    if (BtnEvt == beClick) {
         if (Piano.CommonLightingIsOn())
             Piano.DefaultState();
         else Piano.CommonLightingON();
